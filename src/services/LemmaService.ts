@@ -350,6 +350,33 @@ class LemmaService {
   // 6. Get Missions
   async getMissions(): Promise<Mission[]> {
     const rows = await this.queryDatastore<any>('SELECT * FROM missions ORDER BY created_at DESC');
+    if (rows.length === 0) {
+      // Seed default active missions to make the app alive on first login
+      return [
+        {
+          id: 'seed-mission-1',
+          userId: 'seed-user',
+          title: 'DSA Placement Accelerator (Striver A-Z)',
+          description: 'Daily target: 5 problems, currently on Arrays & Strings.',
+          status: 'active',
+          startDate: '2026-06-30',
+          targetDate: '2026-07-30',
+          createdAt: new Date().toISOString(),
+          updatedAt: new Date().toISOString()
+        },
+        {
+          id: 'seed-mission-2',
+          userId: 'seed-user',
+          title: 'CollegeConnect MERN App Deployment',
+          description: 'Finish MongoDB schemas, setup API routes and deploy to Vercel/Render.',
+          status: 'active',
+          startDate: '2026-06-25',
+          targetDate: '2026-07-15',
+          createdAt: new Date().toISOString(),
+          updatedAt: new Date().toISOString()
+        }
+      ];
+    }
     return rows.map((row) => ({
       id: row.id,
       userId: row.user_id,
@@ -366,6 +393,89 @@ class LemmaService {
   // 7. Get Tasks (Mapped from mission_steps datastore)
   async getTasks(): Promise<Task[]> {
     const rows = await this.queryDatastore<any>('SELECT * FROM mission_steps ORDER BY step_index ASC');
+    if (rows.length === 0) {
+      // Seed default tasks for our default active missions
+      return [
+        {
+          id: 'seed-task-1-1',
+          userId: 'seed-user',
+          missionId: 'seed-mission-1',
+          title: 'Review Striver Arrays: Two Pointers & Sliding Window',
+          description: 'Drill medium difficulty sliding window challenges.',
+          status: 'in_progress',
+          priority: 'high',
+          estimatedDuration: 90,
+          scheduledStart: new Date().toISOString(),
+          createdAt: new Date().toISOString(),
+          updatedAt: new Date().toISOString()
+        },
+        {
+          id: 'seed-task-1-2',
+          userId: 'seed-user',
+          missionId: 'seed-mission-1',
+          title: 'Complete Sorting Algorithms & Recursion Basics',
+          description: 'Review quicksort and mergesort step structures.',
+          status: 'todo',
+          priority: 'medium',
+          estimatedDuration: 60,
+          scheduledStart: new Date(Date.now() + 2 * 24 * 60 * 60 * 1000).toISOString(),
+          createdAt: new Date().toISOString(),
+          updatedAt: new Date().toISOString()
+        },
+        {
+          id: 'seed-task-1-3',
+          userId: 'seed-user',
+          missionId: 'seed-mission-1',
+          title: 'Solve 15 Sliding Window problems on Leetcode',
+          description: 'Targeting specific medium arrays items.',
+          status: 'todo',
+          priority: 'high',
+          estimatedDuration: 120,
+          scheduledStart: new Date(Date.now() + 5 * 24 * 60 * 60 * 1000).toISOString(),
+          createdAt: new Date().toISOString(),
+          updatedAt: new Date().toISOString()
+        },
+        {
+          id: 'seed-task-2-1',
+          userId: 'seed-user',
+          missionId: 'seed-mission-2',
+          title: 'Verify MERN authentication routes with JWT',
+          description: 'Check cookie handling and backend route validation.',
+          status: 'completed',
+          priority: 'high',
+          estimatedDuration: 45,
+          scheduledStart: new Date(Date.now() - 2 * 24 * 60 * 60 * 1000).toISOString(),
+          createdAt: new Date().toISOString(),
+          updatedAt: new Date().toISOString()
+        },
+        {
+          id: 'seed-task-2-2',
+          userId: 'seed-user',
+          missionId: 'seed-mission-2',
+          title: 'Write API integration tests for CollegeConnect',
+          description: 'Ensure correct response statuses and payload validation.',
+          status: 'in_progress',
+          priority: 'medium',
+          estimatedDuration: 90,
+          scheduledStart: new Date().toISOString(),
+          createdAt: new Date().toISOString(),
+          updatedAt: new Date().toISOString()
+        },
+        {
+          id: 'seed-task-2-3',
+          userId: 'seed-user',
+          missionId: 'seed-mission-2',
+          title: 'Deploy Node backend to Render & frontend to Vercel',
+          description: 'Link GitHub repos, configure environmental keys and deploy.',
+          status: 'todo',
+          priority: 'high',
+          estimatedDuration: 60,
+          scheduledStart: new Date(Date.now() + 2 * 24 * 60 * 60 * 1000).toISOString(),
+          createdAt: new Date().toISOString(),
+          updatedAt: new Date().toISOString()
+        }
+      ];
+    }
     return rows.map((row) => {
       let status: 'todo' | 'in_progress' | 'completed' = 'todo';
       if (row.status === 'done') {

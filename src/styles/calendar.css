@@ -1,0 +1,90 @@
+/* Premium FullCalendar Styling Overrides */
+.fc {
+  font-family: inherit;
+}
+.fc-theme-standard td, .fc-theme-standard th {
+  border-color: #E2E8F0;
+}
+.fc-theme-standard .fc-scrollgrid {
+  border-color: transparent;
+}
+.fc-header-toolbar {
+  margin-bottom: 1.5rem !important;
+}
+.fc-toolbar-title {
+  font-family: 'Inter', sans-serif;
+  font-weight: 800 !important;
+  font-size: 1.25rem !important;
+  color: var(--text-primary);
+  letter-spacing: -0.025em;
+}
+.fc-button-primary {
+  background-color: #fff !important;
+  color: var(--text-secondary) !important;
+  border: 1px solid #E2E8F0 !important;
+  border-radius: 10px !important;
+  font-weight: 600 !important;
+  font-size: 0.875rem !important;
+  padding: 0.4rem 0.8rem !important;
+  text-transform: capitalize !important;
+  box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.05) !important;
+  transition: all 0.2s ease !important;
+}
+.fc-button-primary:hover {
+  background-color: #F8FAFC !important;
+  border-color: #CBD5E1 !important;
+  color: var(--text-primary) !important;
+}
+.fc-button-primary:disabled {
+  opacity: 0.5 !important;
+}
+.fc-button-active {
+  background-color: var(--color-primary-light) !important;
+  color: var(--color-primary) !important;
+  border-color: var(--color-primary-border) !important;
+}
+.fc-daygrid-day-number, .fc-col-header-cell-cushion {
+  color: var(--text-secondary);
+  font-weight: 600;
+  text-decoration: none !important;
+  padding: 8px !important;
+}
+.fc-col-header-cell-cushion {
+  text-transform: uppercase;
+  font-size: 0.75rem;
+  letter-spacing: 0.05em;
+  padding: 12px 0 !important;
+}
+.fc-day-today {
+  background-color: rgba(90, 92, 216, 0.03) !important;
+}
+.fc-timegrid-slot-label-cushion {
+  color: var(--text-secondary);
+  font-size: 0.75rem;
+  font-weight: 500;
+}
+.fc-v-event, .fc-h-event {
+  border: none !important;
+  border-radius: 6px !important;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+  padding: 2px 4px;
+  overflow: hidden;
+  transition: transform 0.15s ease, box-shadow 0.15s ease;
+}
+.fc-v-event:hover, .fc-h-event:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 4px 6px rgba(0,0,0,0.08);
+  cursor: pointer;
+}
+.fc-event-main {
+  font-weight: 600;
+  font-size: 0.75rem;
+}
+.fc-timegrid-now-indicator-line {
+  border-color: var(--color-primary) !important;
+  border-width: 2px !important;
+}
+.fc-timegrid-now-indicator-arrow {
+  border-color: var(--color-primary) !important;
+  background-color: var(--color-primary) !important;
+}
