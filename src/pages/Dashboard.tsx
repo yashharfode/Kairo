@@ -11,7 +11,8 @@ import {
   Clock, 
   PlusCircle, 
   LineChart,
-  CornerDownRight
+  CornerDownRight,
+  BookOpen
 } from 'lucide-react';
 import { Link } from 'react-router-dom';
 
@@ -342,6 +343,113 @@ export const Dashboard = () => {
               </Link>
             </div>
 
+          </div>
+
+          {/* 4. KAIRO Executive Operations Guide (Full Width) */}
+          <div className="lg:col-span-12 bg-white border border-gray-150 rounded-3xl p-6 shadow-sm mt-6">
+            <div className="flex items-center gap-3 mb-6">
+              <div className="w-10 h-10 rounded-xl bg-secondary flex items-center justify-center text-primary shadow-sm shrink-0">
+                <BookOpen className="w-5 h-5" />
+              </div>
+              <div>
+                <h2 className="font-heading font-black text-base text-text-primary">KAIRO Operations Manual</h2>
+                <p className="text-xs text-text-secondary mt-0.5">Learn how to maximize your AI Chief of Staff's capabilities</p>
+              </div>
+            </div>
+
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+              
+              <div className="bg-gray-50/40 p-4 rounded-2xl border border-gray-100/80 space-y-3 flex flex-col justify-between">
+                <div>
+                  <div className="flex items-center gap-2 mb-1.5">
+                    <span className="w-2 h-2 rounded-full bg-primary" />
+                    <h4 className="font-bold text-xs text-text-primary uppercase tracking-wide">🧠 Brain & Signals</h4>
+                  </div>
+                  <p className="text-xs text-text-secondary leading-relaxed">
+                    Scans external inputs (notifications, hackathons, academic opportunities) and extracts relevant tags.
+                  </p>
+                </div>
+                <div className="text-[10px] text-primary bg-secondary px-2.5 py-1.5 rounded-lg font-bold border border-primary-border/20 self-start">
+                  Example: Promote "Google Placement Opportunity" to a Live Mission
+                </div>
+              </div>
+
+              <div className="bg-gray-50/40 p-4 rounded-2xl border border-gray-100/80 space-y-3 flex flex-col justify-between">
+                <div>
+                  <div className="flex items-center gap-2 mb-1.5">
+                    <span className="w-2 h-2 rounded-full bg-primary" />
+                    <h4 className="font-bold text-xs text-text-primary uppercase tracking-wide">📥 Smart Inbox</h4>
+                  </div>
+                  <p className="text-xs text-text-secondary leading-relaxed">
+                    Ingests emails, texts, or logs. Triages content through a multi-stage AI reasoning pipeline.
+                  </p>
+                </div>
+                <div className="text-[10px] text-primary bg-secondary px-2.5 py-1.5 rounded-lg font-bold border border-primary-border/20 self-start">
+                  Example: Analyze WhatsApp text messages to update task priorities
+                </div>
+              </div>
+
+              <div className="bg-gray-50/40 p-4 rounded-2xl border border-gray-100/80 space-y-3 flex flex-col justify-between">
+                <div>
+                  <div className="flex items-center gap-2 mb-1.5">
+                    <span className="w-2 h-2 rounded-full bg-primary" />
+                    <h4 className="font-bold text-xs text-text-primary uppercase tracking-wide">🗺️ Mission Planner</h4>
+                  </div>
+                  <p className="text-xs text-text-secondary leading-relaxed">
+                    Reverse-plans long-term goals into structured milestones and step-by-step preparation checklists.
+                  </p>
+                </div>
+                <div className="text-[10px] text-primary bg-secondary px-2.5 py-1.5 rounded-lg font-bold border border-primary-border/20 self-start">
+                  Example: "I want to score 9.0+ CGPA in DBMS semester end exams"
+                </div>
+              </div>
+
+              <div className="bg-gray-50/40 p-4 rounded-2xl border border-gray-100/80 space-y-3 flex flex-col justify-between">
+                <div>
+                  <div className="flex items-center gap-2 mb-1.5">
+                    <span className="w-2 h-2 rounded-full bg-primary" />
+                    <h4 className="font-bold text-xs text-text-primary uppercase tracking-wide">💬 AI Chat Copilot</h4>
+                  </div>
+                  <p className="text-xs text-text-secondary leading-relaxed">
+                    Direct dialogue window with KAIRO. Fully synchronized with your memories, timelines, and active tasks.
+                  </p>
+                </div>
+                <div className="text-[10px] text-primary bg-secondary px-2.5 py-1.5 rounded-lg font-bold border border-primary-border/20 self-start">
+                  Example: Ask "What should I focus on first today, and why?"
+                </div>
+              </div>
+
+              <div className="bg-gray-50/40 p-4 rounded-2xl border border-gray-100/80 space-y-3 flex flex-col justify-between">
+                <div>
+                  <div className="flex items-center gap-2 mb-1.5">
+                    <span className="w-2 h-2 rounded-full bg-primary" />
+                    <h4 className="font-bold text-xs text-text-primary uppercase tracking-wide">📅 Calendar & Tasks</h4>
+                  </div>
+                  <p className="text-xs text-text-secondary leading-relaxed">
+                    Interactive drag-and-drop calendar dynamically synced with tasks created by the Mission Planner.
+                  </p>
+                </div>
+                <div className="text-[10px] text-primary bg-secondary px-2.5 py-1.5 rounded-lg font-bold border border-primary-border/20 self-start">
+                  Example: Drag a DSA practice task to reschedule it on the weekly timeline
+                </div>
+              </div>
+
+              <div className="bg-gray-50/40 p-4 rounded-2xl border border-gray-100/80 space-y-3 flex flex-col justify-between">
+                <div>
+                  <div className="flex items-center gap-2 mb-1.5">
+                    <span className="w-2 h-2 rounded-full bg-primary" />
+                    <h4 className="font-bold text-xs text-text-primary uppercase tracking-wide">📊 Analytics Hub</h4>
+                  </div>
+                  <p className="text-xs text-text-secondary leading-relaxed">
+                    Tracks daily metrics, completion ratios, and timeline risk assessment scores automatically.
+                  </p>
+                </div>
+                <div className="text-[10px] text-primary bg-secondary px-2.5 py-1.5 rounded-lg font-bold border border-primary-border/20 self-start">
+                  Example: Check target date alignment and completion probability rates
+                </div>
+              </div>
+
+            </div>
           </div>
 
         </div>
