@@ -168,10 +168,10 @@ export const WorkspacesView = () => {
           <div className="w-8 h-8 border-4 border-primary border-t-transparent rounded-full animate-spin"></div>
         </div>
       ) : (
-        <div className="flex-1 grid grid-cols-1 lg:grid-cols-12 gap-6 items-start min-h-0">
+        <div className="flex-1 grid grid-cols-1 lg:grid-cols-12 gap-5 items-start min-h-0">
           
-          {/* LEFT SIDEBAR PANEL (4-Cols on Large Screens) */}
-          <div className="lg:col-span-4 flex flex-col gap-6 w-full shrink-0">
+          {/* LEFT SIDEBAR PANEL (3-Cols on Large Screens) */}
+          <div className="lg:col-span-3 flex flex-col gap-4 w-full shrink-0">
             
             {/* INGEST FORM OVERLAY */}
             {showIntake && (
@@ -210,10 +210,10 @@ export const WorkspacesView = () => {
             )}
 
             {/* WORKSPACES LIST */}
-            <div className="bg-white border border-gray-150 rounded-3xl p-5 shadow-sm space-y-4">
-              <h3 className="font-heading font-extrabold text-[10px] uppercase tracking-wider text-text-secondary border-b border-gray-50 pb-2">Active Workspaces</h3>
+            <div className="bg-white border border-slate-100 rounded-2xl p-4 shadow-sm space-y-3">
+              <h3 className="font-heading font-extrabold text-[10px] uppercase tracking-wider text-text-secondary border-b border-slate-50 pb-1.5">Active Workspaces</h3>
               
-              <div className="space-y-2 max-h-[400px] overflow-y-auto pr-1">
+              <div className="space-y-2 max-h-[460px] overflow-y-auto pr-1 scrollbar-none">
                 {workspaces.map(ws => {
                   const isActive = activeWorkspaceId === ws.id;
                   return (
@@ -221,10 +221,10 @@ export const WorkspacesView = () => {
                       key={ws.id}
                       onClick={() => setActiveWorkspaceId(ws.id)}
                       className={cn(
-                        "w-full text-left p-4 rounded-2xl border transition-all flex flex-col justify-between items-start gap-2.5",
+                        "w-full text-left p-3 rounded-xl border transition-all flex flex-col justify-between items-start gap-2",
                         isActive
                           ? "bg-primary-light/40 border-primary/25 shadow-sm shadow-primary/5"
-                          : "bg-white border-gray-100 hover:bg-gray-50"
+                          : "bg-white border-slate-100 hover:bg-gray-50"
                       )}
                     >
                       <div className="w-full">
@@ -243,11 +243,11 @@ export const WorkspacesView = () => {
                         <p className="text-xs text-text-secondary mt-1 line-clamp-2 leading-relaxed">{ws.description}</p>
                       </div>
 
-                      <div className="w-full flex items-center justify-between border-t border-gray-100/50 pt-2.5 text-[10px] text-text-secondary font-bold">
+                      <div className="w-full flex items-center justify-between border-t border-slate-50 pt-2 text-[10px] text-text-secondary font-bold">
                         <span className="flex items-center gap-1">
-                          <Clock className="w-3.5 h-3.5" /> {ws.daysRemaining ? `${ws.daysRemaining} days left` : 'Ongoing'}
+                          <Clock className="w-3.5 h-3.5" /> {ws.daysRemaining ? `${ws.daysRemaining}d left` : 'Ongoing'}
                         </span>
-                        <span>{ws.progress}% Completed</span>
+                        <span>{ws.progress}%</span>
                       </div>
                     </button>
                   );
@@ -257,51 +257,51 @@ export const WorkspacesView = () => {
 
           </div>
 
-          {/* RIGHT DETAILED PANEL (8-Cols on Large Screens) */}
-          <div className="lg:col-span-8 flex flex-col gap-6 w-full min-w-0">
+          {/* RIGHT DETAILED PANEL (9-Cols on Large Screens) */}
+          <div className="lg:col-span-9 flex flex-col gap-4 w-full min-w-0">
             {activeWorkspace ? (
-              <div className="space-y-6">
+              <div className="space-y-4">
                 
                 {/* 1. AI EXECUTIVE BRIEF HEADER */}
-                <div className="bg-white border border-gray-150 rounded-3xl p-6 shadow-sm relative overflow-hidden">
+                <div className="bg-white border border-slate-100 rounded-3xl p-5 shadow-sm relative overflow-hidden">
                   <div className="absolute top-0 right-0 w-48 h-48 bg-primary/5 rounded-full blur-3xl pointer-events-none translate-x-1/4 -translate-y-1/4" />
                   
-                  <div className="flex items-start justify-between gap-4 border-b border-gray-50 pb-4 mb-4">
-                    <div className="flex items-start gap-4">
-                      <div className="w-11 h-11 rounded-2xl bg-primary flex items-center justify-center text-white shadow-md shadow-primary/20 shrink-0">
+                  <div className="flex items-start justify-between gap-4 border-b border-slate-100 pb-3.5 mb-3.5">
+                    <div className="flex items-start gap-3">
+                      <div className="w-10 h-10 rounded-xl bg-primary flex items-center justify-center text-white shadow-md shadow-primary/20 shrink-0">
                         <Sparkles className="w-5 h-5" />
                       </div>
                       <div>
-                        <h2 className="font-heading font-black text-lg md:text-xl text-text-primary">{activeWorkspace.title}</h2>
+                        <h2 className="font-heading font-black text-base md:text-lg text-text-primary">{activeWorkspace.title}</h2>
                         <p className="text-xs text-text-secondary mt-0.5 font-medium">{activeWorkspace.organization}</p>
                       </div>
                     </div>
 
-                    <div className="text-right">
-                      <p className="text-[10px] font-extrabold text-text-secondary uppercase">Progress</p>
-                      <p className="text-xl font-black text-primary">{activeWorkspace.progress}%</p>
+                    <div className="text-right shrink-0">
+                      <p className="text-[9px] font-bold text-text-secondary uppercase tracking-wider">Progress</p>
+                      <p className="text-lg font-black text-primary">{activeWorkspace.progress}%</p>
                     </div>
                   </div>
 
-                  <div className="space-y-4">
-                    <div className="bg-primary-light/30 border border-primary-border/20 rounded-2xl p-4">
-                      <p className="font-heading font-black text-xs text-primary flex items-center gap-1.5 uppercase tracking-wider mb-2">
+                  <div className="space-y-3">
+                    <div className="bg-primary-light/30 border border-primary-border/20 rounded-2xl p-3.5">
+                      <p className="font-heading font-black text-[10px] text-primary flex items-center gap-1.5 uppercase tracking-wider mb-1.5">
                         <Clock className="w-3.5 h-3.5" /> AI Executive Brief
                       </p>
-                      <p className="text-xs sm:text-sm text-text-secondary leading-relaxed font-semibold">
+                      <p className="text-xs text-text-secondary leading-relaxed font-semibold">
                         Good Morning, Yash. You have <strong className="text-primary font-black">{activeWorkspace.daysRemaining || 0} days</strong> until submission. 
                         Your current progress is <strong className="text-primary font-black">{activeWorkspace.progress}%</strong>. 
                         The risk assessment level is <strong className={cn("font-black", activeWorkspace.riskLevel === 'High' ? 'text-red-500' : 'text-primary')}>{activeWorkspace.riskLevel}</strong>.
                       </p>
                     </div>
 
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-xs font-semibold">
-                      <div className="bg-gray-50/50 p-3 rounded-xl border border-gray-100 flex flex-col justify-between gap-1">
-                        <span className="text-[10px] text-text-secondary uppercase">Highest Priority Target</span>
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-3 text-xs font-semibold">
+                      <div className="bg-gray-50/50 p-3 rounded-xl border border-slate-50 flex flex-col justify-between gap-1">
+                        <span className="text-[9px] text-text-secondary uppercase tracking-wider">Highest Priority Target</span>
                         <span className="text-text-primary font-extrabold">{activeWorkspace.highestPriority}</span>
                       </div>
-                      <div className="bg-gray-50/50 p-3 rounded-xl border border-gray-100 flex flex-col justify-between gap-1">
-                        <span className="text-[10px] text-text-secondary uppercase">Recommended Next Action</span>
+                      <div className="bg-gray-50/50 p-3 rounded-xl border border-slate-50 flex flex-col justify-between gap-1">
+                        <span className="text-[9px] text-text-secondary uppercase tracking-wider">Recommended Next Action</span>
                         <span className="text-primary font-extrabold">{activeWorkspace.recommendedNextAction}</span>
                       </div>
                     </div>
@@ -309,37 +309,37 @@ export const WorkspacesView = () => {
                 </div>
 
                 {/* 2. INTERACTIVE TIMELINE STAGES */}
-                <div className="bg-white border border-gray-150 rounded-3xl p-6 shadow-sm">
-                  <div className="flex items-center justify-between border-b border-gray-50 pb-3 mb-5">
-                    <h3 className="font-heading font-black text-sm text-text-primary flex items-center gap-1.5">
-                      <Calendar className="w-4.5 h-4.5 text-primary" />
+                <div className="bg-white border border-slate-100 rounded-3xl p-5 shadow-sm">
+                  <div className="flex items-center justify-between border-b border-slate-50 pb-2.5 mb-4">
+                    <h3 className="font-heading font-black text-xs text-text-primary flex items-center gap-1.5 uppercase tracking-wide">
+                      <Calendar className="w-4 h-4 text-primary" />
                       Automatic Execution Timeline
                     </h3>
-                    <span className="text-[10px] text-text-secondary font-bold">Click step to cycle status</span>
+                    <span className="text-[9px] text-text-secondary font-bold">Click to cycle status</span>
                   </div>
 
                   {/* Horizontal stages tracker */}
-                  <div className="flex items-center gap-2 overflow-x-auto pb-3 scrollbar-none">
+                  <div className="flex items-center gap-1.5 overflow-x-auto pb-2 scrollbar-none">
                     {activeWorkspace.timeline.map((step, idx) => (
                       <React.Fragment key={step.id}>
                         <button
                           onClick={() => toggleMilestoneStatus(step.id)}
                           className={cn(
-                            "px-3.5 py-2 rounded-xl border text-[11px] font-bold flex flex-col gap-1 items-start shrink-0 select-none transition-all duration-200 hover:-translate-y-0.5",
+                            "px-3 py-1.5 rounded-xl border text-[10px] font-bold flex flex-col gap-0.5 items-start shrink-0 select-none transition-all duration-200 hover:-translate-y-0.5",
                             step.status === 'completed'
                               ? 'bg-secondary text-primary border-primary-border/20 shadow-sm'
                               : step.status === 'in_progress'
                               ? 'bg-primary text-white border-primary shadow-md shadow-primary/10'
-                              : 'bg-white border-gray-100 text-text-secondary hover:bg-gray-50'
+                              : 'bg-white border-slate-100 text-text-secondary hover:bg-gray-50'
                           )}
                         >
                           <span>{step.label}</span>
-                          <span className="text-[8px] opacity-80 uppercase tracking-widest">
+                          <span className="text-[8px] opacity-80 uppercase tracking-widest font-black">
                             {step.status.replace('_', ' ')}
                           </span>
                         </button>
                         {idx < activeWorkspace.timeline.length - 1 && (
-                          <ChevronRight className="w-4 h-4 text-gray-300 shrink-0" />
+                          <ChevronRight className="w-3.5 h-3.5 text-slate-200 shrink-0" />
                         )}
                       </React.Fragment>
                     ))}
@@ -347,27 +347,27 @@ export const WorkspacesView = () => {
                 </div>
 
                 {/* 3. SUBMISSION CHECKLISTS */}
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   
                   {/* Submission Checklist */}
-                  <div className="bg-white border border-gray-150 rounded-3xl p-6 shadow-sm flex flex-col justify-between">
+                  <div className="bg-white border border-slate-100 rounded-3xl p-5 shadow-sm flex flex-col justify-between">
                     <div>
-                      <h3 className="font-heading font-black text-sm text-text-primary flex items-center gap-1.5 border-b border-gray-50 pb-3 mb-4">
+                      <h3 className="font-heading font-black text-xs text-text-primary flex items-center gap-1.5 border-b border-slate-50 pb-2.5 mb-3.5 uppercase tracking-wide">
                         <CheckSquare className="w-4.5 h-4.5 text-primary" />
                         Submission Checklist
                       </h3>
                       
-                      <div className="space-y-3">
+                      <div className="space-y-2">
                         {activeWorkspace.submissionChecklist.map(item => (
                           <label
                             key={item.id}
-                            className="flex items-start gap-3 p-2.5 rounded-xl border border-gray-50 hover:bg-gray-50/50 cursor-pointer select-none transition-colors"
+                            className="flex items-start gap-2.5 p-2 rounded-xl border border-slate-50 hover:bg-gray-50/50 cursor-pointer select-none transition-colors"
                           >
                             <input
                               type="checkbox"
                               checked={item.completed}
                               onChange={() => toggleSubmissionItem(item.id)}
-                              className="w-4 h-4 rounded text-primary border-gray-300 focus:ring-primary/20 shrink-0 mt-0.5"
+                              className="w-3.5 h-3.5 rounded text-primary border-slate-300 focus:ring-primary/20 shrink-0 mt-0.5"
                             />
                             <span className={cn("text-xs font-semibold leading-relaxed", item.completed ? "text-text-secondary line-through" : "text-text-primary")}>
                               {item.label}
@@ -379,24 +379,24 @@ export const WorkspacesView = () => {
                   </div>
 
                   {/* Demo Checklist */}
-                  <div className="bg-white border border-gray-150 rounded-3xl p-6 shadow-sm flex flex-col justify-between">
+                  <div className="bg-white border border-slate-100 rounded-3xl p-5 shadow-sm flex flex-col justify-between">
                     <div>
-                      <h3 className="font-heading font-black text-sm text-text-primary flex items-center gap-1.5 border-b border-gray-50 pb-3 mb-4">
-                        <Play className="w-4.5 h-4.5 text-primary" />
-                        Demo Recording Checklist
+                      <h3 className="font-heading font-black text-xs text-text-primary flex items-center gap-1.5 border-b border-slate-50 pb-2.5 mb-3.5 uppercase tracking-wide">
+                        <Play className="w-4 h-4 text-primary" />
+                        Demo Checklist
                       </h3>
                       
-                      <div className="space-y-3">
+                      <div className="space-y-2">
                         {activeWorkspace.demoChecklist.map(item => (
                           <label
                             key={item.id}
-                            className="flex items-start gap-3 p-2.5 rounded-xl border border-gray-50 hover:bg-gray-50/50 cursor-pointer select-none transition-colors"
+                            className="flex items-start gap-2.5 p-2 rounded-xl border border-slate-50 hover:bg-gray-50/50 cursor-pointer select-none transition-colors"
                           >
                             <input
                               type="checkbox"
                               checked={item.completed}
                               onChange={() => toggleDemoItem(item.id)}
-                              className="w-4 h-4 rounded text-primary border-gray-300 focus:ring-primary/20 shrink-0 mt-0.5"
+                              className="w-3.5 h-3.5 rounded text-primary border-slate-300 focus:ring-primary/20 shrink-0 mt-0.5"
                             />
                             <span className={cn("text-xs font-semibold leading-relaxed", item.completed ? "text-text-secondary line-through" : "text-text-primary")}>
                               {item.label}
@@ -410,57 +410,51 @@ export const WorkspacesView = () => {
                 </div>
 
                 {/* 4. RESOURCE CENTER & TECH STACK */}
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   
                   {/* Resources */}
-                  <div className="bg-white border border-gray-150 rounded-3xl p-6 shadow-sm">
-                    <h3 className="font-heading font-black text-sm text-text-primary flex items-center gap-1.5 border-b border-gray-50 pb-3 mb-4">
-                      <Compass className="w-4.5 h-4.5 text-primary" />
-                      Operations Resource Center
+                  <div className="bg-white border border-slate-100 rounded-3xl p-5 shadow-sm">
+                    <h3 className="font-heading font-black text-xs text-text-primary flex items-center gap-1.5 border-b border-slate-50 pb-2.5 mb-3.5 uppercase tracking-wide">
+                      <Compass className="w-4 h-4 text-primary" />
+                      Resource Center
                     </h3>
                     
-                    <div className="grid grid-cols-1 gap-2.5">
+                    <div className="grid grid-cols-1 gap-2">
                       {activeWorkspace.resources.map(res => (
                         <a
                           key={res.label}
                           href={res.url}
                           target="_blank"
                           rel="noreferrer"
-                          className="flex items-center justify-between p-3 rounded-xl border border-gray-100 hover:border-primary-border/20 bg-gray-50/20 hover:bg-white transition-all text-xs font-bold text-text-primary"
+                          className="flex items-center justify-between p-2.5 rounded-xl border border-slate-50 hover:border-primary-border/20 bg-gray-50/20 hover:bg-white transition-all text-xs font-bold text-text-primary"
                         >
-                          <div className="flex items-center gap-2.5">
-                            {res.type === 'github' ? (
-                              <Globe className="w-4 h-4 text-text-primary" />
-                            ) : res.type === 'figma' ? (
-                              <Compass className="w-4 h-4 text-pink-500" />
-                            ) : (
-                              <Globe className="w-4 h-4 text-primary" />
-                            )}
+                          <div className="flex items-center gap-2">
+                            <Globe className="w-4 h-4 text-primary shrink-0" />
                             <span>{res.label}</span>
                           </div>
-                          <ExternalLink className="w-3.5 h-3.5 text-text-secondary" />
+                          <ExternalLink className="w-3.5 h-3.5 text-text-secondary shrink-0" />
                         </a>
                       ))}
                     </div>
                   </div>
 
                   {/* Tech Stack Strategy */}
-                  <div className="bg-white border border-gray-150 rounded-3xl p-6 shadow-sm">
-                    <h3 className="font-heading font-black text-sm text-text-primary flex items-center gap-1.5 border-b border-gray-50 pb-3 mb-4">
-                      <Settings className="w-4.5 h-4.5 text-primary" />
-                      AI Recommended Tech Stack
+                  <div className="bg-white border border-slate-100 rounded-3xl p-5 shadow-sm">
+                    <h3 className="font-heading font-black text-xs text-text-primary flex items-center gap-1.5 border-b border-slate-50 pb-2.5 mb-3.5 uppercase tracking-wide">
+                      <Settings className="w-4 h-4 text-primary" />
+                      Recommended Tech Stack
                     </h3>
                     
-                    <div className="space-y-4">
-                      <div className="flex flex-wrap gap-2">
+                    <div className="space-y-3.5">
+                      <div className="flex flex-wrap gap-1.5">
                         {activeWorkspace.aiStrategy.suggestedTechStack.map(tech => (
-                          <span key={tech} className="bg-secondary text-primary border border-primary-border/20 px-3 py-1 rounded-xl text-xs font-bold">
+                          <span key={tech} className="bg-secondary text-primary border border-primary-border/10 px-2.5 py-0.5 rounded-lg text-xs font-bold">
                             {tech}
                           </span>
                         ))}
                       </div>
                       
-                      <div className="border-t border-gray-50 pt-3 flex justify-between items-center text-[10px] text-text-secondary font-bold">
+                      <div className="border-t border-slate-50 pt-2.5 flex justify-between items-center text-[10px] text-text-secondary font-bold">
                         <span>Confidence In Strategy</span>
                         <span className="bg-green-50 text-green-600 px-2 py-0.5 rounded-lg border border-green-200">
                           {activeWorkspace.aiStrategy.executionConfidence}
@@ -472,24 +466,24 @@ export const WorkspacesView = () => {
                 </div>
 
                 {/* 5. AI STRATEGY & INNOVATION OPPORTUNITIES */}
-                <div className="bg-white border border-gray-150 rounded-3xl p-6 shadow-sm space-y-4">
-                  <div className="flex items-center justify-between border-b border-gray-50 pb-3">
-                    <h3 className="font-heading font-black text-sm text-text-primary flex items-center gap-1.5">
-                      <Sparkles className="w-4.5 h-4.5 text-primary" />
-                      KAIRO AI Winning Strategy
+                <div className="bg-white border border-slate-100 rounded-3xl p-5 shadow-sm space-y-3.5">
+                  <div className="flex items-center justify-between border-b border-slate-50 pb-2.5">
+                    <h3 className="font-heading font-black text-xs text-text-primary flex items-center gap-1.5 uppercase tracking-wide">
+                      <Sparkles className="w-4 h-4 text-primary" />
+                      Winning Strategy & Innovation
                     </h3>
-                    <span className="text-[10px] bg-primary/10 text-primary px-2.5 py-0.5 rounded uppercase font-bold">Strategy Deck</span>
+                    <span className="text-[9px] bg-primary/10 text-primary px-2 py-0.5 rounded uppercase font-bold">AI Insights</span>
                   </div>
                   
-                  <div className="space-y-4 text-xs sm:text-sm leading-relaxed">
-                    <div className="bg-gray-50/50 p-4 rounded-2xl border border-gray-100 text-text-secondary">
-                      <p className="font-bold text-text-primary mb-1">🎯 Primary Strategy Guidance</p>
+                  <div className="space-y-3.5 text-xs leading-relaxed">
+                    <div className="bg-gray-50/50 p-3.5 rounded-2xl border border-slate-50 text-text-secondary font-semibold">
+                      <p className="font-bold text-text-primary mb-1">🎯 Primary Guidance</p>
                       {activeWorkspace.aiStrategy.winningStrategy}
                     </div>
 
-                    <div className="space-y-2">
+                    <div className="space-y-1.5">
                       <p className="font-bold text-text-primary">💡 High-Impact Innovation Opportunities</p>
-                      <ul className="list-disc pl-5 space-y-1.5 text-text-secondary">
+                      <ul className="list-disc pl-5 space-y-1 text-text-secondary font-semibold">
                         {activeWorkspace.aiStrategy.innovationOpportunities.map(opp => (
                           <li key={opp}>{opp}</li>
                         ))}
@@ -499,13 +493,13 @@ export const WorkspacesView = () => {
                 </div>
 
                 {/* 6. OTHER SCRIPPED DETAILS (judging criteria, rules, etc.) */}
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   
                   {/* Rules */}
-                  <div className="bg-white border border-gray-150 rounded-3xl p-6 shadow-sm flex flex-col justify-between">
+                  <div className="bg-white border border-slate-100 rounded-3xl p-5 shadow-sm flex flex-col justify-between">
                     <div>
-                      <h3 className="font-heading font-black text-sm text-text-primary flex items-center gap-1.5 border-b border-gray-50 pb-3 mb-4">
-                        <ShieldAlert className="w-4.5 h-4.5 text-primary" />
+                      <h3 className="font-heading font-black text-xs text-text-primary flex items-center gap-1.5 border-b border-slate-50 pb-2.5 mb-3.5 uppercase tracking-wide">
+                        <ShieldAlert className="w-4 h-4 text-primary" />
                         Extracted Rules
                       </h3>
                       <p className="text-xs text-text-secondary leading-relaxed font-semibold">
@@ -513,20 +507,20 @@ export const WorkspacesView = () => {
                       </p>
                     </div>
                     
-                    <div className="mt-4 pt-3 border-t border-gray-50 flex justify-between items-center text-[10px] text-text-secondary font-bold">
+                    <div className="mt-4 pt-2.5 border-t border-slate-50 flex justify-between items-center text-[10px] text-text-secondary font-bold">
                       <span>Prize Pool</span>
                       <span className="text-primary font-black">{activeWorkspace.prizePool || 'N/A'}</span>
                     </div>
                   </div>
 
                   {/* Judging Criteria */}
-                  <div className="bg-white border border-gray-150 rounded-3xl p-6 shadow-sm">
-                    <h3 className="font-heading font-black text-sm text-text-primary flex items-center gap-1.5 border-b border-gray-50 pb-3 mb-4">
-                      <Award className="w-4.5 h-4.5 text-primary" />
-                      Judging Evaluation Criteria
+                  <div className="bg-white border border-slate-100 rounded-3xl p-5 shadow-sm">
+                    <h3 className="font-heading font-black text-xs text-text-primary flex items-center gap-1.5 border-b border-slate-50 pb-2.5 mb-3.5 uppercase tracking-wide">
+                      <Award className="w-4 h-4 text-primary" />
+                      Judging Criteria
                     </h3>
                     
-                    <ul className="space-y-2.5">
+                    <ul className="space-y-2">
                       {activeWorkspace.judgingCriteria?.map((crit, idx) => (
                         <li key={idx} className="flex gap-2 text-xs font-semibold text-text-secondary">
                           <span className="text-primary font-extrabold">{idx + 1}.</span>
