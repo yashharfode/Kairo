@@ -230,7 +230,7 @@ interface InputPhaseProps {
   title: string;
   source: string;
   priority: PriorityLevel;
-  textareaRef: React.RefObject<HTMLTextAreaElement>;
+  textareaRef: React.RefObject<HTMLTextAreaElement | null>;
   onTextChange: (e: React.ChangeEvent<HTMLTextAreaElement>) => void;
   onTitleChange: (v: string) => void;
   onSourceChange: (v: string) => void;

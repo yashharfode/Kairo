@@ -14,12 +14,7 @@ import {
   PlusCircle, 
   LineChart,
   CornerDownRight,
-  BookOpen,
-  Target,
-  Zap,
-  ShieldAlert,
-  Timer,
-  CalendarClock
+  BookOpen
 } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import MissionControlCard from '@/components/MissionControlCard';
