@@ -8,17 +8,17 @@ export default {
     extend: {
       colors: {
         primary: {
-          DEFAULT: '#0A5C4A',
-          hover: '#084A3B',
+          DEFAULT: 'var(--primary)',
+          hover: 'var(--primary-hover)',
         },
         secondary: {
-          DEFAULT: '#E6F7F1',
+          DEFAULT: 'var(--secondary)',
         },
-        background: '#F7FAFA',
+        background: 'var(--background)',
         surface: '#FFFFFF',
         text: {
-          primary: '#202F2B',
-          secondary: '#6B7A78',
+          primary: 'var(--text-primary)',
+          secondary: 'var(--text-secondary)',
         },
         accent: '#FFB703',
         priority: {

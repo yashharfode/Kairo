@@ -2,9 +2,49 @@
 @tailwind components;
 @tailwind utilities;
 
+/* Theme Definitions */
+:root, .theme-light {
+  --primary: #0A5C4A; /* Premium Deep Pine Green */
+  --primary-hover: #084A3B;
+  --secondary: #E6F7F1;
+  --background: #F7FAFA;
+  --text-primary: #202F2B;
+  --text-secondary: #6B7A78;
+}
+
+.theme-dark {
+  --primary: #10B981; /* Vibrant Emerald Green for Dark Mode */
+  --primary-hover: #059669;
+  --secondary: #115E59;
+  --background: #0F172A; /* Slate 900 */
+  --text-primary: #F8FAFC;
+  --text-secondary: #94A3B8;
+}
+
+.theme-teal {
+  --primary: #0D9488; /* Vibrant Teal */
+  --primary-hover: #0F766E;
+  --secondary: #F0FDFA;
+  --background: #FAFAFA;
+  --text-primary: #111827;
+  --text-secondary: #4B5563;
+}
+
+.theme-slate {
+  --primary: #4F46E5; /* Indigo/Slate Premium */
+  --primary-hover: #4338CA;
+  --secondary: #EEF2F6;
+  --background: #F8FAFC;
+  --text-primary: #0F172A;
+  --text-secondary: #475569;
+}
+
 @layer base {
   body {
-    @apply bg-background text-text-primary font-body antialiased selection:bg-primary selection:text-white;
+    background-color: var(--background);
+    color: var(--text-primary);
+    @apply font-body antialiased selection:bg-primary selection:text-white;
+    transition: background-color 0.2s ease, color 0.2s ease;
   }
 
   h1, h2, h3, h4, h5, h6 {
