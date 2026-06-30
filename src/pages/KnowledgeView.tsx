@@ -23,7 +23,7 @@ function circleLayout(nodes: KnowledgeNode[], cx = 400, cy = 300, r = 220) {
 }
 
 const KIND_COLOR: Record<string, string> = {
-  mission: '#34908B',
+  mission: '#5A5CD8',
   task: '#818CF8',
   memory: '#F59E0B',
   concept: '#EC4899',
@@ -116,7 +116,7 @@ export const KnowledgeView = () => {
 
               {/* Nodes */}
               {nodes.map(n => {
-                const color = KIND_COLOR[n.kind || 'concept'] || '#34908B';
+                const color = KIND_COLOR[n.kind || 'concept'] || '#5A5CD8';
                 const isSelected = selected?.id === n.id;
                 return (
                   <g

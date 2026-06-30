@@ -93,7 +93,7 @@ export const Landing = () => {
               {/* Heading */}
               <h1 className="text-4xl sm:text-5xl md:text-[60px] font-heading font-black text-text-primary tracking-tight leading-[1.05] mb-6">
                 Think Less.<br />
-                <span className="bg-gradient-to-br from-[#34908B] to-[#4AAEA8] bg-clip-text text-transparent">Execute More.</span>
+                <span className="bg-gradient-to-br from-[#5A5CD8] to-[#8B5CF6] bg-clip-text text-transparent">Execute More.</span>
               </h1>
               
               {/* Subheading */}
