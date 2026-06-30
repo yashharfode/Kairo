@@ -156,8 +156,8 @@ export const SettingsView = () => {
         {/* Connection Status */}
         <div className="bg-surface border border-gray-100 rounded-2xl p-6 shadow-sm">
           <div className="flex items-center gap-3 mb-5">
-            <div className="w-9 h-9 rounded-xl bg-emerald-50 flex items-center justify-center">
-              <Cpu className="w-5 h-5 text-emerald-600" />
+            <div className="w-9 h-9 rounded-xl bg-primary/10 flex items-center justify-center">
+              <Cpu className="w-5 h-5 text-primary" />
             </div>
             <h2 className="font-heading font-semibold text-text-primary">KAIRO Pod & Core Services Connection</h2>
           </div>
@@ -166,32 +166,32 @@ export const SettingsView = () => {
             <div className="flex items-center justify-between py-3 border-b border-gray-100">
               <span className="text-sm text-text-secondary font-medium">Lemma Pod Engine</span>
               <div className="flex items-center gap-2">
-                <span className="w-2 h-2 bg-emerald-500 rounded-full animate-pulse" />
-                <span className="text-sm font-semibold text-emerald-600">Connected</span>
+                <span className="w-2 h-2 bg-primary rounded-full animate-pulse" />
+                <span className="text-sm font-semibold text-primary">Connected</span>
               </div>
             </div>
             {/* Firebase Auth status */}
             <div className="flex items-center justify-between py-3 border-b border-gray-100">
               <span className="text-sm text-text-secondary font-medium">Firebase Authentication</span>
               <div className="flex items-center gap-2">
-                <span className="w-2 h-2 bg-emerald-500 rounded-full animate-pulse" />
-                <span className="text-sm font-semibold text-emerald-600">Active (Google Provider)</span>
+                <span className="w-2 h-2 bg-primary rounded-full animate-pulse" />
+                <span className="text-sm font-semibold text-primary">Active (Google Provider)</span>
               </div>
             </div>
             {/* Firestore status */}
             <div className="flex items-center justify-between py-3 border-b border-gray-100">
               <span className="text-sm text-text-secondary font-medium">Firestore Profile Cache</span>
               <div className="flex items-center gap-2">
-                <span className="w-2 h-2 bg-emerald-500 rounded-full animate-pulse" />
-                <span className="text-sm font-semibold text-emerald-600">Online</span>
+                <span className="w-2 h-2 bg-primary rounded-full animate-pulse" />
+                <span className="text-sm font-semibold text-primary">Online</span>
               </div>
             </div>
             {/* Firebase Storage status */}
             <div className="flex items-center justify-between py-3 border-b border-gray-100">
               <span className="text-sm text-text-secondary font-medium">Firebase Storage (Avatars)</span>
               <div className="flex items-center gap-2">
-                <span className="w-2 h-2 bg-emerald-500 rounded-full animate-pulse" />
-                <span className="text-sm font-semibold text-emerald-600">Online</span>
+                <span className="w-2 h-2 bg-primary rounded-full animate-pulse" />
+                <span className="text-sm font-semibold text-primary">Online</span>
               </div>
             </div>
 

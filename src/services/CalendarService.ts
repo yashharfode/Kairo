@@ -18,7 +18,7 @@ class CalendarService {
         start: task.scheduledStart,
         end: task.scheduledEnd || new Date(new Date(task.scheduledStart!).getTime() + (task.estimatedDuration || 60) * 60 * 1000).toISOString(),
         allDay: false,
-        color: task.priority === 'urgent' ? '#EF4444' : task.priority === 'high' ? '#F97316' : '#64C9B0'
+        color: task.priority === 'urgent' ? '#EF4444' : task.priority === 'high' ? '#F97316' : '#5A5CD8'
       }));
 
     // Return events or a fallback mock if no tasks are scheduled yet
@@ -29,7 +29,7 @@ class CalendarService {
         start: new Date().toISOString(),
         end: new Date(Date.now() + 60 * 60 * 1000).toISOString(),
         allDay: false,
-        color: '#64C9B0'
+        color: '#5A5CD8'
       }
     ];
   }

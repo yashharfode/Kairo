@@ -45,7 +45,7 @@ export const AnalyticsView = () => {
   const stats = [
     { label: 'Active Missions', value: missions.filter(m => m.status === 'active').length, icon: Target, color: 'text-primary bg-primary/10' },
     { label: 'Total Tasks', value: tasks.length, icon: CheckSquare, color: 'text-indigo-600 bg-indigo-50' },
-    { label: 'Completed Tasks', value: completed, icon: Zap, color: 'text-emerald-600 bg-emerald-50' },
+    { label: 'Completed Tasks', value: completed, icon: Zap, color: 'text-primary bg-primary/10' },
     { label: 'AI Memories', value: memories.length, icon: Brain, color: 'text-amber-600 bg-amber-50' },
   ];
 
@@ -101,7 +101,7 @@ export const AnalyticsView = () => {
                 </div>
                 <div className="space-y-3 text-sm flex-1">
                   {[
-                    { label: 'Completed', count: completed, color: 'bg-emerald-500' },
+                    { label: 'Completed', count: completed, color: 'bg-primary' },
                     { label: 'In Progress', count: inProgress, color: 'bg-amber-400' },
                     { label: 'To Do', count: todo, color: 'bg-gray-300' },
                   ].map(item => (

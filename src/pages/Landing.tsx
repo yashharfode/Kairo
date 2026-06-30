@@ -321,7 +321,7 @@ export const Landing = () => {
         <div className="mt-14 md:mt-20 border-t border-gray-200/60 pt-8 w-full">
           <div className="flex flex-wrap md:flex-nowrap items-center justify-between gap-6 bg-white/60 backdrop-blur-sm border border-gray-100 p-5 rounded-2xl shadow-sm">
             <div className="flex items-center gap-3">
-              <div className="w-8 h-8 rounded-full bg-emerald-500/10 flex items-center justify-center text-emerald-600">
+              <div className="w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center text-primary">
                 <ShieldCheck className="w-5 h-5" />
               </div>
               <span className="text-xs sm:text-sm font-black text-text-primary">Trusted by students, builders and professionals</span>

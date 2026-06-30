@@ -111,7 +111,7 @@ export const Sidebar = ({ isOpen, onClose }: SidebarProps) => {
 
           <div className="bg-secondary/40 rounded-xl p-3 flex flex-col items-start gap-1.5 border border-primary/5">
             <div className="flex items-center gap-1.5">
-              <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
+              <span className="w-1.5 h-1.5 rounded-full bg-primary animate-pulse" />
               <span className="text-[10px] font-bold text-text-primary">System Online</span>
             </div>
             <p className="text-[9px] text-text-secondary leading-tight">AI Executive OS is ready.</p>

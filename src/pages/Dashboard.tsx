@@ -221,7 +221,7 @@ export const Dashboard = () => {
 
               {pendingTasks.length === 0 ? (
                 <div className="text-center py-8 text-text-secondary text-sm">
-                  <CheckCircle2 className="w-12 h-12 mx-auto text-emerald-500 mb-2" />
+                  <CheckCircle2 className="w-12 h-12 mx-auto text-primary mb-2" />
                   All caught up! Let KAIRO plan your next steps.
                 </div>
               ) : (
@@ -264,7 +264,7 @@ export const Dashboard = () => {
                       <div className="flex items-center justify-between text-xs">
                         <span className="font-bold text-text-primary truncate max-w-[150px]">{mission.title}</span>
                         <span className={`font-black uppercase tracking-wider text-[9px] ${
-                          score > 60 ? 'text-red-500' : 'text-emerald-500'
+                          score > 60 ? 'text-red-500' : 'text-primary'
                         }`}>{score > 60 ? 'High Risk' : 'Healthy'}</span>
                       </div>
                       
