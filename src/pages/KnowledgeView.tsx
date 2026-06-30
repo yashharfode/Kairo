@@ -23,7 +23,7 @@ function circleLayout(nodes: KnowledgeNode[], cx = 400, cy = 300, r = 220) {
 }
 
 const KIND_COLOR: Record<string, string> = {
-  mission: '#64C9B0',
+  mission: '#34908B',
   task: '#818CF8',
   memory: '#F59E0B',
   concept: '#EC4899',
@@ -81,7 +81,7 @@ export const KnowledgeView = () => {
               <defs>
                 <radialGradient id="bg-grad" cx="50%" cy="50%" r="60%">
                   <stop offset="0%" stopColor="#F7FAFA" />
-                  <stop offset="100%" stopColor="#EDF8F6" />
+                   <stop offset="100%" stopColor="#E8F6F5" />
                 </radialGradient>
               </defs>
               <rect width="800" height="600" fill="url(#bg-grad)" />
@@ -116,7 +116,7 @@ export const KnowledgeView = () => {
 
               {/* Nodes */}
               {nodes.map(n => {
-                const color = KIND_COLOR[n.kind || 'concept'] || '#64C9B0';
+                const color = KIND_COLOR[n.kind || 'concept'] || '#34908B';
                 const isSelected = selected?.id === n.id;
                 return (
                   <g

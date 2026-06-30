@@ -90,7 +90,7 @@ export const AnalyticsView = () => {
                     <circle cx="18" cy="18" r="15.9" fill="none" stroke="#F1F5F9" strokeWidth="3" />
                     <circle
                       cx="18" cy="18" r="15.9" fill="none"
-                      stroke="#64C9B0" strokeWidth="3"
+                      stroke="var(--color-primary)" strokeWidth="3"
                       strokeDasharray={`${completionRate} ${100 - completionRate}`}
                       strokeLinecap="round"
                     />

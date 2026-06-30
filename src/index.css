@@ -2,38 +2,56 @@
 @tailwind components;
 @tailwind utilities;
 
-/* Theme Definitions */
-:root, .theme-light {
-  --primary: #0A5C4A; /* Premium Deep Pine Green */
-  --primary-hover: #084A3B;
-  --secondary: #E6F7F1;
-  --background: #F7FAFA;
-  --text-primary: #202F2B;
-  --text-secondary: #6B7A78;
+/* Global Design Tokens & Theme Configuration */
+:root {
+  /* Design Tokens */
+  --color-primary: #34908B;
+  --color-primary-hover: #2C7A75;
+  --color-primary-active: #266864;
+  --color-primary-light: #E8F6F5;
+  --color-primary-border: #A7D8D4;
+  --color-primary-glow: rgba(52,144,139,0.28);
+
+  /* Layout Variables - Inherit from tokens */
+  --primary: var(--color-primary);
+  --primary-hover: var(--color-primary-hover);
+  --secondary: var(--color-primary-light);
+  --background: #F8FAFA;
+  --text-primary: #1F2E2C;
+  --text-secondary: #657573;
+}
+
+.theme-light {
+  --primary: var(--color-primary);
+  --primary-hover: var(--color-primary-hover);
+  --secondary: var(--color-primary-light);
+  --background: #F8FAFA;
+  --text-primary: #1F2E2C;
+  --text-secondary: #657573;
 }
 
 .theme-dark {
-  --primary: #10B981; /* Vibrant Emerald Green for Dark Mode */
-  --primary-hover: #059669;
-  --secondary: #115E59;
+  --primary: var(--color-primary);
+  --primary-hover: var(--color-primary-hover);
+  --secondary: rgba(52, 144, 139, 0.2);
   --background: #0F172A; /* Slate 900 */
   --text-primary: #F8FAFC;
   --text-secondary: #94A3B8;
 }
 
 .theme-teal {
-  --primary: #0D9488; /* Vibrant Teal */
-  --primary-hover: #0F766E;
-  --secondary: #F0FDFA;
+  --primary: var(--color-primary);
+  --primary-hover: var(--color-primary-hover);
+  --secondary: var(--color-primary-light);
   --background: #FAFAFA;
   --text-primary: #111827;
   --text-secondary: #4B5563;
 }
 
 .theme-slate {
-  --primary: #4F46E5; /* Indigo/Slate Premium */
-  --primary-hover: #4338CA;
-  --secondary: #EEF2F6;
+  --primary: var(--color-primary);
+  --primary-hover: var(--color-primary-hover);
+  --secondary: var(--color-primary-light);
   --background: #F8FAFC;
   --text-primary: #0F172A;
   --text-secondary: #475569;
@@ -44,10 +62,31 @@
     background-color: var(--background);
     color: var(--text-primary);
     @apply font-body antialiased selection:bg-primary selection:text-white;
-    transition: background-color 0.2s ease, color 0.2s ease;
+    transition: background-color 0.25s ease, color 0.25s ease;
   }
 
   h1, h2, h3, h4, h5, h6 {
     @apply font-heading tracking-tight;
   }
+}
+
+/* Premium Grid Pattern and Mesh Glow with Unified Primary Token */
+.mesh-glow {
+  background-image: 
+    radial-gradient(circle at 50% -10%, rgba(52, 144, 139, 0.15) 0%, transparent 65%),
+    radial-gradient(circle at 10% 80%, rgba(52, 144, 139, 0.04) 0%, transparent 45%),
+    radial-gradient(circle at 90% 80%, rgba(52, 144, 139, 0.04) 0%, transparent 45%);
+}
+
+.grid-overlay {
+  background-size: 40px 40px;
+  background-image: 
+    linear-gradient(to right, rgba(0, 0, 0, 0.015) 1px, transparent 1px),
+    linear-gradient(to bottom, rgba(0, 0, 0, 0.015) 1px, transparent 1px);
+}
+
+.dark .grid-overlay {
+  background-image: 
+    linear-gradient(to right, rgba(255, 255, 255, 0.01) 1px, transparent 1px),
+    linear-gradient(to bottom, rgba(255, 255, 255, 0.01) 1px, transparent 1px);
 }

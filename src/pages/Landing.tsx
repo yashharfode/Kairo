@@ -93,7 +93,7 @@ export const Landing = () => {
               {/* Heading */}
               <h1 className="text-4xl sm:text-5xl md:text-[60px] font-heading font-black text-text-primary tracking-tight leading-[1.05] mb-6">
                 Think Less.<br />
-                <span className="text-primary">Execute More.</span>
+                <span className="bg-gradient-to-br from-[#34908B] to-[#4AAEA8] bg-clip-text text-transparent">Execute More.</span>
               </h1>
               
               {/* Subheading */}
@@ -184,7 +184,7 @@ export const Landing = () => {
                   <div className="relative w-10 h-10 flex items-center justify-center">
                     <svg className="w-full h-full -rotate-90" viewBox="0 0 36 36">
                       <circle cx="18" cy="18" r="16" fill="none" stroke="#F1F5F9" strokeWidth="3.5" />
-                      <circle cx="18" cy="18" r="16" fill="none" stroke="#14B88F" strokeWidth="3.5" strokeDasharray="78 100" strokeLinecap="round" />
+                      <circle cx="18" cy="18" r="16" fill="none" stroke="var(--color-primary)" strokeWidth="3.5" strokeDasharray="78 100" strokeLinecap="round" />
                     </svg>
                     <span className="absolute text-[10px] font-extrabold text-text-primary">78%</span>
                   </div>

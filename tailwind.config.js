@@ -10,6 +10,9 @@ export default {
         primary: {
           DEFAULT: 'var(--primary)',
           hover: 'var(--primary-hover)',
+          active: 'var(--color-primary-active)',
+          light: 'var(--color-primary-light)',
+          border: 'var(--color-primary-border)',
         },
         secondary: {
           DEFAULT: 'var(--secondary)',
