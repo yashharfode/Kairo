@@ -1,7 +1,6 @@
 import { useState, useEffect } from 'react';
 import { Inbox, Plus, Loader2 } from 'lucide-react';
 import { inboxService } from '@/services/InboxService';
-import { InboxSource } from '@/types/schema';
 import { INBOX_SOURCE_OPTIONS, normalizeInboxSource } from '@/lib/normalizeInboxSource';
 import type { PriorityLevel, Mission, Task } from '@/types/schema';
 import type { WorkflowProgress } from '@/services/LemmaService';

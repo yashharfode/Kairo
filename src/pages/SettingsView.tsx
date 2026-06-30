@@ -108,7 +108,7 @@ export const SettingsView = () => {
                 <label className="block text-sm font-medium text-text-secondary mb-1">Theme</label>
                 <select
                   value={theme}
-                  onChange={(e) => setTheme(e.target.value)}
+                  onChange={(e) => setTheme(e.target.value as 'light' | 'dark' | 'teal' | 'slate')}
                   className="w-full rounded-lg border border-gray-200 p-2.5 text-sm bg-background focus:ring-2 focus:ring-primary/20 outline-none"
                 >
                   <option value="light">Light Theme (Teal-Clean)</option>

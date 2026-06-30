@@ -17,26 +17,21 @@ export type MissionStatus = 'active' | 'completed' | 'paused' | 'failed';
 export type TaskStatus = 'todo' | 'in_progress' | 'completed';
 export type MessageStatus = 'unprocessed' | 'processed' | 'archived';
 
-/**
- * Central enum for inbox message sources.
- * Values match the valid Lemma inbox_log.source enum exactly.
- * Use these values everywhere — never hardcode raw strings.
- */
-export enum InboxSource {
-  MANUAL            = 'manual',
-  EMAIL             = 'email',
-  CHAT              = 'chat',
-  VOICE_NOTE        = 'voice_note',
-  PDF               = 'pdf',
-  URL               = 'url',
-  CALENDAR          = 'calendar',
-  TASK              = 'task',
-  FIREBASE_STORAGE  = 'firebase_storage',
-  API               = 'api',
-  BROWSER_CLIPBOARD = 'browser_clipboard',
-}
+export const InboxSource = {
+  MANUAL: 'manual',
+  EMAIL: 'email',
+  CHAT: 'chat',
+  VOICE_NOTE: 'voice_note',
+  PDF: 'pdf',
+  URL: 'url',
+  CALENDAR: 'calendar',
+  TASK: 'task',
+  FIREBASE_STORAGE: 'firebase_storage',
+  API: 'api',
+  BROWSER_CLIPBOARD: 'browser_clipboard',
+} as const;
 
-/** @deprecated Use InboxSource enum instead */
+export type InboxSource = typeof InboxSource[keyof typeof InboxSource];
 export type MessageSource = InboxSource;
 
 /**
