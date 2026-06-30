@@ -14,9 +14,15 @@ import {
   PlusCircle, 
   LineChart,
   CornerDownRight,
-  BookOpen
+  BookOpen,
+  Target,
+  Zap,
+  ShieldAlert,
+  Timer,
+  CalendarClock
 } from 'lucide-react';
 import { Link } from 'react-router-dom';
+import MissionControlCard from '@/components/MissionControlCard';
 
 export const Dashboard = () => {
   const { user } = useAuth();
@@ -257,7 +263,15 @@ export const Dashboard = () => {
 
           {/* RIGHT SECTION (4-Cols on Desktop) */}
           <div className="lg:col-span-4 space-y-6 md:space-y-8">
-            
+
+            {/* MISSION CONTROL WIDGET */}
+            <MissionControlCard
+              userName={user?.displayName?.split(' ')[0] || 'Kairo'}
+              missions={activeMissions}
+              completionRate={completionRate}
+              pendingTasks={pendingTasks}
+            />
+
             {/* 1. Risk Radar Widget */}
             <div className="bg-white border border-gray-100 rounded-3xl p-6 shadow-sm">
               <h3 className="font-heading font-black text-sm text-text-primary mb-4">Risk Radar</h3>
