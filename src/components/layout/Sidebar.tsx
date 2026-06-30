@@ -1,11 +1,12 @@
 import { useState } from 'react';
 import { NavLink } from 'react-router-dom';
-import { LayoutDashboard, Brain, Inbox, Flag, Calendar, CheckSquare, MessageSquare, BookOpen, BarChart3, Settings, LogOut, X, ChevronLeft, ChevronRight } from 'lucide-react';
+import { LayoutDashboard, Brain, Inbox, Flag, Calendar, CheckSquare, MessageSquare, BookOpen, BarChart3, Settings, LogOut, X, ChevronLeft, ChevronRight, Layers } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useAuth } from '@/context/AuthContext';
 
 const navItems = [
   { name: 'Dashboard', path: '/dashboard', icon: LayoutDashboard },
+  { name: 'Workspaces', path: '/workspaces', icon: Layers },
   { name: 'Brain', path: '/brain', icon: Brain },
   { name: 'Smart Inbox', path: '/inbox', icon: Inbox },
   { name: 'Mission Planner', path: '/missions', icon: Flag },

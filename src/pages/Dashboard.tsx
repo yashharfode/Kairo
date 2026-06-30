@@ -1,6 +1,8 @@
 import { useEffect, useState } from 'react';
 import { missionService } from '@/services/MissionService';
 import { memoryService } from '@/services/MemoryService';
+import { workspaceService } from '@/services/WorkspaceService';
+import type { Workspace } from '@/services/WorkspaceService';
 import { useAuth } from '@/context/AuthContext';
 import type { Mission, Task, Memory } from '@/types/schema';
 import { 
@@ -21,6 +23,7 @@ export const Dashboard = () => {
   const [missions, setMissions] = useState<Mission[]>([]);
   const [tasks, setTasks] = useState<Task[]>([]);
   const [memories, setMemories] = useState<Memory[]>([]);
+  const [workspaces, setWorkspaces] = useState<Workspace[]>([]);
   const [loading, setLoading] = useState(true);
   const [decisionActive, setDecisionActive] = useState(false);
   const [actionMessage, setActionMessage] = useState<string | null>(null);
@@ -28,14 +31,16 @@ export const Dashboard = () => {
   useEffect(() => {
     const loadData = async () => {
       try {
-        const [m, t, mem] = await Promise.all([
+        const [m, t, mem, ws] = await Promise.all([
           missionService.getMissions(),
           missionService.getTasks(),
           memoryService.getMemories(),
+          workspaceService.getWorkspaces(),
         ]);
         setMissions(m);
         setTasks(t);
         setMemories(mem);
+        setWorkspaces(ws);
       } catch (error) {
         console.error('[Dashboard] Failed to fetch data from Lemma:', error);
       } finally {
@@ -307,6 +312,31 @@ export const Dashboard = () => {
                     <span>{action.label}</span>
                     <PlusCircle className="w-4.5 h-4.5 text-primary shrink-0" />
                   </button>
+                ))}
+              </div>
+            </div>
+
+            {/* Flagship Workspaces Widget */}
+            <div className="bg-white border border-gray-100 rounded-3xl p-6 shadow-sm space-y-4">
+              <div className="flex justify-between items-center border-b border-gray-50 pb-3">
+                <h3 className="font-heading font-black text-sm text-text-primary">Active Workspaces</h3>
+                <span className="text-[9px] bg-primary/10 text-primary px-2 py-0.5 rounded-lg uppercase font-bold">AI Scans</span>
+              </div>
+              
+              <div className="space-y-3">
+                {workspaces.slice(0, 3).map((ws) => (
+                  <Link
+                    key={ws.id}
+                    to="/workspaces"
+                    className="block p-3 rounded-2xl border border-gray-50 bg-gray-50/20 hover:bg-white hover:border-primary-border/20 transition-all"
+                  >
+                    <div className="flex justify-between items-center text-[10px]">
+                      <span className="font-extrabold text-primary uppercase">{ws.organization.split(' ')[0]}</span>
+                      <span className="font-bold text-text-secondary">{ws.progress}%</span>
+                    </div>
+                    <h4 className="font-heading font-black text-xs text-text-primary mt-1.5 truncate">{ws.title}</h4>
+                    <p className="text-[10px] text-text-secondary mt-0.5 line-clamp-1">{ws.description}</p>
+                  </Link>
                 ))}
               </div>
             </div>

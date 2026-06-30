@@ -12,6 +12,7 @@ import { BrainView } from '@/pages/BrainView';
 import { KnowledgeView } from '@/pages/KnowledgeView';
 import { AnalyticsView } from '@/pages/AnalyticsView';
 import { SettingsView } from '@/pages/SettingsView';
+import { WorkspacesView } from '@/pages/WorkspacesView';
 
 import { AuthProvider, useAuth } from '@/context/AuthContext';
 
@@ -31,6 +32,7 @@ function App() {
           {/* App Shell with Sidebar */}
           <Route element={<ProtectedRoute><AppLayout /></ProtectedRoute>}>
             <Route path="/dashboard" element={<Dashboard />} />
+            <Route path="/workspaces" element={<WorkspacesView />} />
             <Route path="/brain" element={<BrainView />} />
             <Route path="/inbox" element={<SmartInbox />} />
             <Route path="/missions" element={<MissionPlanner />} />

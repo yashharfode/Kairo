@@ -14,6 +14,10 @@ class MemoryService {
   async queryMemory(query: string): Promise<string> {
     return lemmaService.askAgent(query);
   }
+
+  async deleteMemory(id: string): Promise<void> {
+    return lemmaService.deleteMemory(id);
+  }
 }
 
 export const memoryService = new MemoryService();

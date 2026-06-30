@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { Brain, Search, Plus, Tag, Loader2, Sparkles, ArrowRight, TrendingUp } from 'lucide-react';
+import { Brain, Search, Plus, Tag, Loader2, Sparkles, ArrowRight, TrendingUp, Trash2 } from 'lucide-react';
 import { memoryService } from '@/services/MemoryService';
 import { lemmaClient } from '@/lib/lemmaClient';
 import type { Memory } from '@/types/schema';
@@ -86,6 +86,18 @@ export const BrainView = () => {
       alert(`🎉 "${optTitle}" has been promoted to an active Mission in your Lemma Pod. reverse-planning timeline scheduled!`);
     } catch (err) {
       console.error('[BrainView] Promotion failed:', err);
+    }
+  };
+
+  // Delete memory from Pod database
+  const handleDeleteMemory = async (id: string) => {
+    if (!confirm('Are you sure you want to delete this memory?')) return;
+    try {
+      await memoryService.deleteMemory(id);
+      setMemories(prev => prev.filter(m => m.id !== id));
+    } catch (err) {
+      console.error('[BrainView] Failed to delete memory:', err);
+      alert('Failed to delete memory. Please try again.');
     }
   };
 
@@ -260,7 +272,19 @@ export const BrainView = () => {
                   )}
                   
                   <div className="mt-4 pt-3 border-t border-gray-50 flex items-center justify-between text-[10px] text-text-secondary font-semibold">
-                    <span>Pod Entry</span>
+                    <div className="flex items-center gap-1.5">
+                      <span>Pod Entry</span>
+                      <button
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          handleDeleteMemory(m.id);
+                        }}
+                        title="Delete Memory"
+                        className="text-text-secondary hover:text-red-500 transition-colors p-0.5"
+                      >
+                        <Trash2 className="w-3.5 h-3.5" />
+                      </button>
+                    </div>
                     <span>{new Date(m.createdAt).toLocaleDateString('en-IN', { day: 'numeric', month: 'short' })}</span>
                   </div>
                 </div>

@@ -347,6 +347,14 @@ class LemmaService {
     };
   }
 
+  // 5b. Delete Memory
+  async deleteMemory(id: string): Promise<void> {
+    if (this.isOffline()) {
+      throw new Error('Cannot delete memory while offline.');
+    }
+    await lemmaClient.records.delete('memories', id);
+  }
+
   // 6. Get Missions
   async getMissions(): Promise<Mission[]> {
     const rows = await this.queryDatastore<any>('SELECT * FROM missions ORDER BY created_at DESC');
