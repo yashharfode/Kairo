@@ -8,6 +8,102 @@ import { workspaceService } from '@/services/WorkspaceService';
 import type { Workspace } from '@/services/WorkspaceService';
 import { cn } from '@/lib/utils';
 
+/* ─── Workspace Hero Card ────────────────────────────────────────────────── */
+function WorkspaceHeroCard({ workspace }: { workspace: Workspace }) {
+  const risk = workspace.riskLevel ?? 'Medium';
+  const riskColor = risk === 'High' ? 'text-red-400 bg-red-500/20' : risk === 'Low' ? 'text-emerald-400 bg-emerald-500/20' : 'text-orange-400 bg-orange-500/20';
+  const progress = workspace.progress ?? 0;
+
+  // SVG ring
+  const radius = 38;
+  const circ = 2 * Math.PI * radius;
+  const offset = circ - (progress / 100) * circ;
+
+  const nextMilestone = workspace.timeline?.find(t => t.status === 'in_progress' || t.status === 'pending');
+
+  return (
+    <div className="relative rounded-3xl overflow-hidden shadow-2xl" style={{ background: 'linear-gradient(145deg, #0d0d1f 0%, #141430 60%, #0d1525 100%)' }}>
+      {/* Glow blobs */}
+      <div className="absolute top-0 right-0 w-72 h-72 rounded-full blur-3xl opacity-25 pointer-events-none" style={{ background: 'radial-gradient(circle, #6366f1, transparent)' }} />
+      <div className="absolute bottom-0 left-0 w-48 h-48 rounded-full blur-3xl opacity-15 pointer-events-none" style={{ background: 'radial-gradient(circle, #8b5cf6, transparent)' }} />
+
+      <div className="relative z-10 p-6 md:p-8">
+        {/* Top: label + org */}
+        <div className="flex items-center gap-2 mb-4">
+          <Sparkles className="w-4 h-4 text-indigo-400" />
+          <span className="text-[10px] font-extrabold text-indigo-400 uppercase tracking-[0.15em]">Active Workspace</span>
+          <span className="ml-auto text-[10px] font-bold text-white/30 bg-white/5 border border-white/10 px-2.5 py-0.5 rounded-full">{workspace.organization}</span>
+        </div>
+
+        {/* Main content: ring + stats */}
+        <div className="flex flex-col md:flex-row gap-6 md:gap-10 items-start md:items-center">
+          {/* Progress ring */}
+          <div className="relative shrink-0 self-center">
+            <svg width="100" height="100" viewBox="0 0 100 100" className="-rotate-90">
+              <circle cx="50" cy="50" r={radius} fill="none" stroke="rgba(255,255,255,0.07)" strokeWidth="7" />
+              <circle cx="50" cy="50" r={radius} fill="none"
+                stroke="url(#heroGrad)" strokeWidth="7" strokeLinecap="round"
+                strokeDasharray={circ} strokeDashoffset={offset}
+                className="transition-all duration-700"
+              />
+              <defs>
+                <linearGradient id="heroGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+                  <stop offset="0%" stopColor="#818cf8" />
+                  <stop offset="100%" stopColor="#c084fc" />
+                </linearGradient>
+              </defs>
+            </svg>
+            <div className="absolute inset-0 flex flex-col items-center justify-center">
+              <span className="text-2xl font-black text-white leading-none">{progress}%</span>
+              <span className="text-[9px] text-white/40 font-bold uppercase tracking-wider mt-0.5">Done</span>
+            </div>
+          </div>
+
+          {/* Title + meta */}
+          <div className="flex-1 min-w-0">
+            <h2 className="text-xl md:text-2xl font-heading font-black text-white leading-tight mb-1">{workspace.title}</h2>
+            <p className="text-white/40 text-sm font-medium mb-5 leading-relaxed line-clamp-2">{workspace.description}</p>
+
+            {/* Stats row */}
+            <div className="grid grid-cols-3 gap-3">
+              {/* Days left */}
+              <div className="bg-white/5 border border-white/10 rounded-2xl p-3 text-center">
+                <p className="text-xl font-black text-white">{workspace.daysRemaining ?? '—'}</p>
+                <p className="text-[9px] text-white/40 font-bold uppercase tracking-wider mt-0.5">Days Left</p>
+              </div>
+
+              {/* Next Milestone */}
+              <div className="bg-white/5 border border-white/10 rounded-2xl p-3 col-span-1">
+                <p className="text-[9px] text-white/40 font-bold uppercase tracking-wider mb-1">Next Milestone</p>
+                <p className="text-xs font-bold text-white leading-snug truncate">{nextMilestone?.label ?? workspace.highestPriority ?? 'On track'}</p>
+              </div>
+
+              {/* Risk */}
+              <div className={`rounded-2xl p-3 text-center border border-white/10 ${riskColor}`}>
+                <p className="text-[9px] font-bold uppercase tracking-wider mb-1 opacity-80">Risk</p>
+                <p className="text-sm font-black leading-none">{risk}</p>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {/* Bottom: recommended action */}
+        {workspace.recommendedNextAction && (
+          <div className="mt-5 pt-5 border-t border-white/8 flex items-center gap-3">
+            <div className="w-7 h-7 rounded-xl bg-violet-500/20 border border-violet-400/20 flex items-center justify-center shrink-0">
+              <Sparkles className="w-3.5 h-3.5 text-violet-300" />
+            </div>
+            <div>
+              <p className="text-[9px] text-white/30 font-bold uppercase tracking-widest">AI Recommendation</p>
+              <p className="text-sm font-bold text-white">{workspace.recommendedNextAction}</p>
+            </div>
+          </div>
+        )}
+      </div>
+    </div>
+  );
+}
+
 export const WorkspacesView = () => {
   const [workspaces, setWorkspaces] = useState<Workspace[]>([]);
   const [activeWorkspaceId, setActiveWorkspaceId] = useState<string | null>(null);
@@ -262,51 +358,8 @@ export const WorkspacesView = () => {
             {activeWorkspace ? (
               <div className="space-y-4">
                 
-                {/* 1. AI EXECUTIVE BRIEF HEADER */}
-                <div className="bg-white border border-slate-100 rounded-3xl p-5 shadow-sm relative overflow-hidden">
-                  <div className="absolute top-0 right-0 w-48 h-48 bg-primary/5 rounded-full blur-3xl pointer-events-none translate-x-1/4 -translate-y-1/4" />
-                  
-                  <div className="flex items-start justify-between gap-4 border-b border-slate-100 pb-3.5 mb-3.5">
-                    <div className="flex items-start gap-3">
-                      <div className="w-10 h-10 rounded-xl bg-primary flex items-center justify-center text-white shadow-md shadow-primary/20 shrink-0">
-                        <Sparkles className="w-5 h-5" />
-                      </div>
-                      <div>
-                        <h2 className="font-heading font-black text-base md:text-lg text-text-primary">{activeWorkspace.title}</h2>
-                        <p className="text-xs text-text-secondary mt-0.5 font-medium">{activeWorkspace.organization}</p>
-                      </div>
-                    </div>
-
-                    <div className="text-right shrink-0">
-                      <p className="text-[9px] font-bold text-text-secondary uppercase tracking-wider">Progress</p>
-                      <p className="text-lg font-black text-primary">{activeWorkspace.progress}%</p>
-                    </div>
-                  </div>
-
-                  <div className="space-y-3">
-                    <div className="bg-primary-light/30 border border-primary-border/20 rounded-2xl p-3.5">
-                      <p className="font-heading font-black text-[10px] text-primary flex items-center gap-1.5 uppercase tracking-wider mb-1.5">
-                        <Clock className="w-3.5 h-3.5" /> AI Executive Brief
-                      </p>
-                      <p className="text-xs text-text-secondary leading-relaxed font-semibold">
-                        Good Morning, Yash. You have <strong className="text-primary font-black">{activeWorkspace.daysRemaining || 0} days</strong> until submission. 
-                        Your current progress is <strong className="text-primary font-black">{activeWorkspace.progress}%</strong>. 
-                        The risk assessment level is <strong className={cn("font-black", activeWorkspace.riskLevel === 'High' ? 'text-red-500' : 'text-primary')}>{activeWorkspace.riskLevel}</strong>.
-                      </p>
-                    </div>
-
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-3 text-xs font-semibold">
-                      <div className="bg-gray-50/50 p-3 rounded-xl border border-slate-50 flex flex-col justify-between gap-1">
-                        <span className="text-[9px] text-text-secondary uppercase tracking-wider">Highest Priority Target</span>
-                        <span className="text-text-primary font-extrabold">{activeWorkspace.highestPriority}</span>
-                      </div>
-                      <div className="bg-gray-50/50 p-3 rounded-xl border border-slate-50 flex flex-col justify-between gap-1">
-                        <span className="text-[9px] text-text-secondary uppercase tracking-wider">Recommended Next Action</span>
-                        <span className="text-primary font-extrabold">{activeWorkspace.recommendedNextAction}</span>
-                      </div>
-                    </div>
-                  </div>
-                </div>
+                {/* ── HERO CARD ── */}
+                <WorkspaceHeroCard workspace={activeWorkspace} />
 
                 {/* 2. INTERACTIVE TIMELINE STAGES */}
                 <div className="bg-white border border-slate-100 rounded-3xl p-5 shadow-sm">

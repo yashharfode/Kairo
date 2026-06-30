@@ -1,317 +1,554 @@
-import React, { useState, useEffect } from 'react';
-import { Inbox, Plus, Loader2, Sparkles } from 'lucide-react';
+import React, { useState, useEffect, useRef } from 'react';
 import { inboxService } from '@/services/InboxService';
 import { INBOX_SOURCE_OPTIONS, normalizeInboxSource } from '@/lib/normalizeInboxSource';
 import type { PriorityLevel, Mission, Task } from '@/types/schema';
 import type { WorkflowProgress } from '@/services/LemmaService';
-import { cn } from '@/lib/utils';
 
+/* ─── Pipeline step definitions ─────────────────────────────────────────── */
+const PIPELINE_STEPS = [
+  { id: 'intake',       icon: '📥', label: 'Extracting',        sub: 'Reading signal content…' },
+  { id: 'classify',     icon: '🔍', label: 'Classifying',       sub: 'Detecting intent & context…' },
+  { id: 'should_plan',  icon: '🧠', label: 'AI Thinking',       sub: 'Planning execution paths…' },
+  { id: 'draft_plan',   icon: '🎯', label: 'Creating Mission',  sub: 'Building mission blueprint…' },
+  { id: 'persist_plan', icon: '📅', label: 'Creating Calendar', sub: 'Scheduling milestones…' },
+  { id: 'brain',        icon: '💡', label: 'Updating Brain',    sub: 'Writing to memory pod…' },
+];
+
+type StepStatus = 'idle' | 'running' | 'done';
+interface PipelineState {
+  steps: Record<string, StepStatus>;
+  currentLabel: string;
+  done: boolean;
+}
+
+type FeedItem = {
+  id: string;
+  title: string;
+  source: string;
+  content: string;
+  result: { missions: Mission[]; tasks: Task[] };
+  processedAt: Date;
+};
+
+/* ─── Main Component ─────────────────────────────────────────────────────── */
 export const SmartInbox = () => {
-  const [loading, setLoading] = useState(false);
-  const [feed, setFeed] = useState<{ id: string; title: string; source: string; content: string; result: { missions: Mission[]; tasks: Task[] } }[]>([]);
-  const [workflowProgress, setWorkflowProgress] = useState<WorkflowProgress | null>(null);
-
-  const [form, setForm] = useState<{
-    source: string;
-    title: string;
-    message: string;
-    deadline: string;
-    priority: PriorityLevel;
-  }>({
-    source: 'whatsapp',
-    title: '',
-    message: '',
-    deadline: '',
-    priority: 'medium',
+  const [phase, setPhase] = useState<'idle' | 'typing' | 'processing' | 'done'>('idle');
+  const [text, setText] = useState('');
+  const [title, setTitle] = useState('');
+  const [source, setSource] = useState('whatsapp');
+  const [priority, setPriority] = useState<PriorityLevel>('medium');
+  const [pipeline, setPipeline] = useState<PipelineState>({
+    steps: {},
+    currentLabel: '',
+    done: false,
   });
+  const [feed, setFeed] = useState<FeedItem[]>([]);
+  const [latestResult, setLatestResult] = useState<FeedItem | null>(null);
+  const textareaRef = useRef<HTMLTextAreaElement>(null);
 
-  // Load existing feed from Lemma on startup
+  // Load history on mount
   useEffect(() => {
-    const loadInbox = async () => {
-      try {
-        const messages = await inboxService.getMessages();
-        const items = messages.map((m) => ({
+    inboxService.getMessages().then((msgs) => {
+      setFeed(
+        msgs.map((m) => ({
           id: m.id,
           title: m.title,
           source: m.source,
           content: m.content,
           result: { missions: [], tasks: [] },
-        }));
-        setFeed(items);
-      } catch (err) {
-        console.error('[SmartInbox] Failed to load inbox log history:', err);
-      }
-    };
-    loadInbox();
+          processedAt: new Date(),
+        }))
+      );
+    }).catch(() => {});
   }, []);
 
-  const handleAddMessage = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!form.title || !form.message) return;
+  // Auto-focus textarea when idle
+  useEffect(() => {
+    if (phase === 'idle' || phase === 'typing') {
+      textareaRef.current?.focus();
+    }
+  }, [phase]);
 
-    setLoading(true);
-    setWorkflowProgress(null);
+  const handleTextChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
+    setText(e.target.value);
+    setPhase(e.target.value.trim() ? 'typing' : 'idle');
+  };
+
+  const handleProcess = async () => {
+    if (!text.trim()) return;
+
+    // Auto-derive title if not set
+    const autoTitle = title.trim() || text.trim().split('\n')[0].slice(0, 60);
+
+    setPhase('processing');
+    setPipeline({ steps: {}, currentLabel: 'Initializing…', done: false });
+    setLatestResult(null);
+
     try {
       const result = await inboxService.processMessage(
         {
-          source: normalizeInboxSource(form.source),
-          title: form.title,
-          content: form.message,
-          deadline: form.deadline || undefined,
-          priority: form.priority,
+          source: normalizeInboxSource(source),
+          title: autoTitle,
+          content: text,
+          priority,
         },
         (progress: WorkflowProgress) => {
-          setWorkflowProgress(progress);
+          const newSteps: Record<string, StepStatus> = {};
+          let currentLabel = '';
+
+          progress.steps.forEach((s) => {
+            newSteps[s.id] = s.status as StepStatus;
+            if (s.status === 'running') currentLabel = PIPELINE_STEPS.find(p => p.id === s.id)?.label ?? 'Processing…';
+          });
+
+          // If all are done, show brain update step
+          const allDone = progress.steps.every(s => s.status === 'completed');
+          if (allDone) {
+            newSteps['brain'] = 'running';
+            currentLabel = 'Updating Brain';
+          }
+
+          setPipeline({ steps: newSteps, currentLabel, done: false });
         }
       );
 
-      setFeed((prevFeed) => [
-        {
-          id: Date.now().toString(),
-          title: form.title,
-          source: form.source,
-          content: form.message,
-          result,
-        },
-        ...prevFeed,
-      ]);
+      // Mark brain done → full done
+      setPipeline((p) => ({ ...p, steps: { ...p.steps, brain: 'done' }, currentLabel: 'Done', done: true }));
 
-      setForm({
-        source: 'whatsapp',
-        title: '',
-        message: '',
-        deadline: '',
-        priority: 'medium',
-      });
-      setWorkflowProgress(null);
-    } catch (error) {
-      console.error('[SmartInbox] AI processing error:', error);
-    } finally {
-      setLoading(false);
+      const item: FeedItem = {
+        id: Date.now().toString(),
+        title: autoTitle,
+        source,
+        content: text,
+        result,
+        processedAt: new Date(),
+      };
+
+      setLatestResult(item);
+      setFeed((prev) => [item, ...prev]);
+
+      // Wait a moment then show done
+      setTimeout(() => {
+        setPhase('done');
+      }, 600);
+
+    } catch (err) {
+      console.error('[SmartInbox]', err);
+      setPhase('typing');
     }
   };
 
-  // Convert raw Lemma workflow steps into high-fidelity AI pipeline labels
-  const getStepLabel = (stepId: string) => {
-    switch (stepId) {
-      case 'intake': return 'Reading incoming message content...';
-      case 'classify': return 'Extracting timeline constraints & priority...';
-      case 'should_plan': return 'Understanding context and planning paths...';
-      case 'draft_plan': return 'Creating actionable milestone checksheets...';
-      case 'persist_plan': return 'Syncing memories and schedules to KAIRO pod...';
-      default: return 'Processing...';
-    }
+  const handleReset = () => {
+    setText('');
+    setTitle('');
+    setSource('whatsapp');
+    setPriority('medium');
+    setPhase('idle');
+    setPipeline({ steps: {}, currentLabel: '', done: false });
+    setLatestResult(null);
   };
 
   return (
-    <div className="p-4 md:p-8 h-full flex flex-col font-body overflow-y-auto">
-      <header className="mb-6 md:mb-8">
-        <h1 className="text-2xl md:text-3xl font-heading font-black text-text-primary flex items-center gap-3">
-          <Inbox className="w-7 h-7 md:w-8 md:h-8 text-primary" />
-          Smart Inbox
-        </h1>
-        <p className="text-text-secondary text-xs md:text-sm mt-1">Paste emails, WhatsApp chats or notes. KAIRO parses them into execution paths.</p>
-      </header>
+    <div className="relative min-h-screen bg-[#f8f8fc] font-body overflow-hidden flex flex-col">
 
-      <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 md:gap-8 items-start">
-        
-        {/* LEFT COLUMN: Entry Form & Processing Monitor (5-Cols) */}
-        <div className="lg:col-span-5 bg-white border border-gray-100 rounded-3xl p-6 shadow-sm space-y-6">
-          <div>
-            <h2 className="font-heading font-bold text-base text-text-primary mb-4 flex items-center gap-2">
-              <Plus className="w-5 h-5 text-primary" />
-              Ingest Signal
-            </h2>
-            
-            <form onSubmit={handleAddMessage} className="space-y-4">
-              <div>
-                <label className="block text-[11px] font-bold text-text-secondary uppercase mb-1">Source channel</label>
-                <select
-                  value={form.source}
-                  onChange={(e) => setForm({ ...form, source: e.target.value })}
-                  className="w-full rounded-xl border border-gray-200 p-3 text-xs bg-gray-50/50 focus:ring-2 focus:ring-primary/20 outline-none font-semibold text-text-primary"
-                >
-                  {INBOX_SOURCE_OPTIONS.map((opt) => (
-                    <option key={opt.value} value={opt.value}>
-                      {opt.label}
-                    </option>
-                  ))}
-                </select>
-              </div>
+      {/* ── Background decorative blobs ── */}
+      <div className="pointer-events-none fixed inset-0 overflow-hidden">
+        <div className="absolute -top-32 -left-32 w-96 h-96 rounded-full opacity-[0.06]"
+          style={{ background: 'radial-gradient(circle, #6366f1, transparent)' }} />
+        <div className="absolute top-1/2 -right-24 w-80 h-80 rounded-full opacity-[0.05]"
+          style={{ background: 'radial-gradient(circle, #8b5cf6, transparent)' }} />
+      </div>
 
-              <div>
-                <label className="block text-[11px] font-bold text-text-secondary uppercase mb-1">Brief Title</label>
-                <input
-                  type="text"
-                  value={form.title}
-                  onChange={(e) => setForm({ ...form, title: e.target.value })}
-                  placeholder="e.g. Razorpay internship application status"
-                  className="w-full rounded-xl border border-gray-200 p-3 text-xs bg-gray-50/50 focus:ring-2 focus:ring-primary/20 outline-none text-text-primary font-medium"
-                  required
-                />
-              </div>
+      <div className="relative z-10 flex-1 flex flex-col max-w-3xl mx-auto w-full px-4 py-10 md:py-16">
 
-              <div>
-                <label className="block text-[11px] font-bold text-text-secondary uppercase mb-1">Raw Content</label>
-                <textarea
-                  rows={4}
-                  value={form.message}
-                  onChange={(e) => setForm({ ...form, message: e.target.value })}
-                  placeholder="Paste the notification or email body text here..."
-                  className="w-full rounded-xl border border-gray-200 p-3 text-xs bg-gray-50/50 focus:ring-2 focus:ring-primary/20 outline-none resize-none text-text-primary font-medium"
-                  required
-                ></textarea>
-              </div>
-
-              <div className="grid grid-cols-2 gap-4">
-                <div>
-                  <label className="block text-[11px] font-bold text-text-secondary uppercase mb-1">Target Deadline</label>
-                  <input
-                    type="date"
-                    value={form.deadline}
-                    onChange={(e) => setForm({ ...form, deadline: e.target.value })}
-                    className="w-full rounded-xl border border-gray-200 p-3 text-xs bg-gray-50/50 focus:ring-2 focus:ring-primary/20 outline-none text-text-primary font-medium"
-                  />
-                </div>
-                <div>
-                  <label className="block text-[11px] font-bold text-text-secondary uppercase mb-1">Priority</label>
-                  <select
-                    value={form.priority}
-                    onChange={(e) => setForm({ ...form, priority: e.target.value as PriorityLevel })}
-                    className="w-full rounded-xl border border-gray-200 p-3 text-xs bg-gray-50/50 focus:ring-2 focus:ring-primary/20 outline-none text-text-primary font-semibold"
-                  >
-                    <option value="low">Low</option>
-                    <option value="medium">Medium</option>
-                    <option value="high">High</option>
-                    <option value="urgent">Urgent</option>
-                  </select>
-                </div>
-              </div>
-
-              <button
-                disabled={loading}
-                type="submit"
-                className="w-full bg-primary hover:bg-primary-hover disabled:bg-primary/50 text-white py-3.5 rounded-xl font-bold text-sm transition-colors shadow-md mt-2 flex justify-center items-center gap-2 active:scale-95"
-              >
-                {loading ? (
-                  <>
-                    <Loader2 className="w-4 h-4 animate-spin" />
-                    <span>Processing with AI...</span>
-                  </>
-                ) : (
-                  <>
-                    <Sparkles className="w-4 h-4" />
-                    <span>Process with AI</span>
-                  </>
-                )}
-              </button>
-            </form>
+        {/* ── HEADER ── */}
+        <div className="text-center mb-10">
+          <div className="inline-flex items-center gap-2 bg-indigo-50 border border-indigo-100 rounded-full px-4 py-1.5 mb-5">
+            <span className="w-1.5 h-1.5 rounded-full bg-indigo-500 animate-pulse" />
+            <span className="text-[11px] font-extrabold text-indigo-600 uppercase tracking-widest">Smart Inbox</span>
           </div>
-
-          {/* Workflow Processing Pipeline */}
-          {workflowProgress && (
-            <div className="border-t border-gray-100 pt-5 space-y-4">
-              <div className="flex items-center justify-between">
-                <span className="text-[10px] font-extrabold text-primary uppercase tracking-wider">AI Executive Timeline</span>
-                <span className="text-[10px] font-bold text-text-secondary">Confidence: 98%</span>
-              </div>
-              
-              <div className="space-y-3.5">
-                {workflowProgress.steps.map((step) => {
-                  const isCompleted = step.status === 'completed';
-                  const isRunning = step.status === 'running';
-                  return (
-                    <div key={step.id} className="flex items-start gap-3 text-xs">
-                      <div className="mt-0.5 shrink-0">
-                        {isCompleted ? (
-                          <div className="w-4 h-4 rounded-full bg-primary flex items-center justify-center text-white text-[9px] font-bold">✓</div>
-                        ) : isRunning ? (
-                          <div className="w-4 h-4 rounded-full bg-amber-100 border border-amber-400 flex items-center justify-center shrink-0">
-                            <span className="w-1.5 h-1.5 rounded-full bg-amber-500 animate-ping" />
-                          </div>
-                        ) : (
-                          <div className="w-4 h-4 rounded-full bg-gray-100 border border-gray-200" />
-                        )}
-                      </div>
-                      <span className={cn(
-                        "font-medium",
-                        isCompleted ? "text-text-primary" : isRunning ? "text-primary font-bold" : "text-text-secondary"
-                      )}>
-                        {getStepLabel(step.id)}
-                      </span>
-                    </div>
-                  );
-                })}
-              </div>
-            </div>
-          )}
+          <h1 className="text-3xl md:text-4xl font-heading font-black text-gray-900 leading-tight">
+            Paste Anything.<br />
+            <span className="text-transparent bg-clip-text"
+              style={{ backgroundImage: 'linear-gradient(135deg, #6366f1, #8b5cf6)' }}>
+              KAIRO Takes It From Here.
+            </span>
+          </h1>
+          <p className="text-sm text-gray-400 mt-3 font-medium">
+            Emails · WhatsApp · Announcements · Links · PDFs · Plain text
+          </p>
         </div>
 
-        {/* RIGHT COLUMN: Processed Inbox Logs Feed (7-Cols) */}
-        <div className="lg:col-span-7 bg-white border border-gray-100 rounded-3xl p-6 shadow-sm flex flex-col min-h-[450px]">
-          <div className="flex items-center justify-between mb-5 border-b border-gray-50 pb-4">
-            <h2 className="font-heading font-black text-base text-text-primary">Processed Logs History</h2>
-            <span className="text-[10px] font-bold bg-secondary text-primary px-2.5 py-0.5 rounded-full uppercase">Pod Datastore</span>
-          </div>
+        {/* ── PHASES ── */}
+        {(phase === 'idle' || phase === 'typing') && (
+          <InputPhase
+            text={text}
+            title={title}
+            source={source}
+            priority={priority}
+            textareaRef={textareaRef}
+            onTextChange={handleTextChange}
+            onTitleChange={setTitle}
+            onSourceChange={setSource}
+            onPriorityChange={setPriority}
+            onProcess={handleProcess}
+          />
+        )}
 
-          {feed.length === 0 ? (
-            <div className="flex-1 flex flex-col items-center justify-center text-center py-12 max-w-sm mx-auto">
-              <div className="w-14 h-14 rounded-2xl bg-secondary flex items-center justify-center text-primary mb-4 shadow-sm shadow-primary/5">
-                <Inbox className="w-7 h-7" />
-              </div>
-              <h3 className="font-heading font-bold text-text-primary text-sm">✨ Nothing here yet</h3>
-              <p className="text-xs text-text-secondary mt-2 leading-relaxed">
-                Paste your first email, WhatsApp study message or college notification. KAIRO will automatically map it to memories, missions and tasks.
-              </p>
+        {phase === 'processing' && (
+          <ProcessingPhase pipeline={pipeline} text={text} />
+        )}
+
+        {phase === 'done' && latestResult && (
+          <DonePhase item={latestResult} onReset={handleReset} />
+        )}
+
+        {/* ── FEED HISTORY ── */}
+        {feed.length > 0 && phase !== 'processing' && (
+          <div className="mt-12">
+            <div className="flex items-center gap-3 mb-5">
+              <div className="h-px flex-1 bg-gray-200" />
+              <span className="text-[10px] font-extrabold text-gray-400 uppercase tracking-widest">Processed History</span>
+              <div className="h-px flex-1 bg-gray-200" />
             </div>
-          ) : (
-            <div className="space-y-4 overflow-y-auto max-h-[550px] pr-2">
-              {feed.map((item) => (
-                <div key={item.id} className="p-4 bg-gray-50/50 rounded-2xl border border-gray-100 flex flex-col gap-3 relative hover:border-primary-border/20 transition-colors">
-                  <div className="flex items-start justify-between gap-3">
-                    <div className="min-w-0">
-                      <span className="text-[9px] font-bold text-text-secondary uppercase tracking-wider">Title</span>
-                      <h4 className="font-bold text-text-primary text-xs sm:text-sm truncate">{item.title}</h4>
-                    </div>
-                    <span className="text-[10px] font-bold bg-secondary text-primary px-2.5 py-0.5 rounded-lg shrink-0 capitalize">
-                      {INBOX_SOURCE_OPTIONS.find(opt => opt.value === item.source || opt.lemma === item.source)?.label || item.source}
-                    </span>
-                  </div>
-
-                  {item.content && (
-                    <div className="bg-white p-3 rounded-xl border border-gray-100 text-[11px] text-text-secondary leading-relaxed">
-                      {item.content}
-                    </div>
-                  )}
-
-                  {/* AI Output preview */}
-                  {(item.result.missions.length > 0 || item.result.tasks.length > 0) && (
-                    <div className="grid grid-cols-2 gap-3 mt-1.5 pt-3 border-t border-gray-100/60">
-                      <div className="bg-white/80 p-2.5 rounded-xl border border-gray-100/60">
-                        <span className="text-[9px] font-bold text-text-secondary uppercase">Missions Auto-drafted</span>
-                        <ul className="mt-1 space-y-0.5 text-[10px] text-text-primary font-semibold">
-                          {item.result.missions.map((m, i) => (
-                            <li key={i} className="truncate">• {m.title}</li>
-                          ))}
-                        </ul>
-                      </div>
-                      <div className="bg-white/80 p-2.5 rounded-xl border border-gray-100/60">
-                        <span className="text-[9px] font-bold text-text-secondary uppercase">Tasks planned</span>
-                        <ul className="mt-1 space-y-0.5 text-[10px] text-text-secondary">
-                          {item.result.tasks.map((t, i) => (
-                            <li key={i} className="truncate">• {t.title}</li>
-                          ))}
-                        </ul>
-                      </div>
-                    </div>
-                  )}
-                </div>
+            <div className="space-y-3">
+              {feed.slice(0, 8).map((item) => (
+                <FeedCard key={item.id} item={item} />
               ))}
             </div>
-          )}
-        </div>
+          </div>
+        )}
 
       </div>
     </div>
   );
 };
+
+/* ─── INPUT PHASE ────────────────────────────────────────────────────────── */
+interface InputPhaseProps {
+  text: string;
+  title: string;
+  source: string;
+  priority: PriorityLevel;
+  textareaRef: React.RefObject<HTMLTextAreaElement>;
+  onTextChange: (e: React.ChangeEvent<HTMLTextAreaElement>) => void;
+  onTitleChange: (v: string) => void;
+  onSourceChange: (v: string) => void;
+  onPriorityChange: (v: PriorityLevel) => void;
+  onProcess: () => void;
+}
+
+function InputPhase({ text, title, source, priority, textareaRef, onTextChange, onTitleChange, onSourceChange, onPriorityChange, onProcess }: InputPhaseProps) {
+  const hasText = text.trim().length > 0;
+
+  return (
+    <div className="space-y-4 animate-fade-in">
+      {/* Big paste area */}
+      <div className={`relative rounded-3xl border-2 transition-all duration-300 overflow-hidden shadow-sm
+        ${hasText
+          ? 'border-indigo-300 shadow-indigo-100 bg-white'
+          : 'border-dashed border-gray-200 bg-white hover:border-indigo-200'}`}>
+
+        {!hasText && (
+          <div className="absolute inset-0 flex flex-col items-center justify-center pointer-events-none select-none gap-3">
+            <div className="text-5xl opacity-20">📋</div>
+            <p className="text-gray-300 font-semibold text-sm">Paste anything here…</p>
+          </div>
+        )}
+
+        <textarea
+          ref={textareaRef}
+          value={text}
+          onChange={onTextChange}
+          rows={8}
+          className="w-full bg-transparent p-6 text-sm text-gray-800 placeholder-transparent outline-none resize-none leading-relaxed font-medium"
+          placeholder="Paste anything here…"
+          spellCheck={false}
+        />
+      </div>
+
+      {/* Optional meta — only show when text is present */}
+      {hasText && (
+        <div className="bg-white rounded-2xl border border-gray-100 p-5 shadow-sm space-y-4 animate-fade-in">
+          <p className="text-[10px] font-extrabold text-gray-400 uppercase tracking-widest">Optional Details</p>
+
+          <div>
+            <label className="block text-[11px] font-bold text-gray-500 mb-1.5">Title (auto-detected if blank)</label>
+            <input
+              type="text"
+              value={title}
+              onChange={(e) => onTitleChange(e.target.value)}
+              placeholder="e.g. Gappy AI Hackathon Registration"
+              className="w-full rounded-xl border border-gray-200 px-4 py-2.5 text-sm bg-gray-50 focus:ring-2 focus:ring-indigo-200 outline-none text-gray-800 font-medium"
+            />
+          </div>
+
+          <div className="grid grid-cols-2 gap-4">
+            <div>
+              <label className="block text-[11px] font-bold text-gray-500 mb-1.5">Source</label>
+              <select
+                value={source}
+                onChange={(e) => onSourceChange(e.target.value)}
+                className="w-full rounded-xl border border-gray-200 px-4 py-2.5 text-sm bg-gray-50 focus:ring-2 focus:ring-indigo-200 outline-none font-semibold text-gray-800"
+              >
+                {INBOX_SOURCE_OPTIONS.map((opt) => (
+                  <option key={opt.value} value={opt.value}>{opt.label}</option>
+                ))}
+              </select>
+            </div>
+            <div>
+              <label className="block text-[11px] font-bold text-gray-500 mb-1.5">Priority</label>
+              <select
+                value={priority}
+                onChange={(e) => onPriorityChange(e.target.value as PriorityLevel)}
+                className="w-full rounded-xl border border-gray-200 px-4 py-2.5 text-sm bg-gray-50 focus:ring-2 focus:ring-indigo-200 outline-none font-semibold text-gray-800"
+              >
+                <option value="low">Low</option>
+                <option value="medium">Medium</option>
+                <option value="high">High</option>
+                <option value="urgent">Urgent 🔥</option>
+              </select>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* CTA */}
+      <button
+        disabled={!hasText}
+        onClick={onProcess}
+        className={`w-full py-4 rounded-2xl font-black text-base transition-all duration-300 flex items-center justify-center gap-3 shadow-lg active:scale-[0.98]
+          ${hasText
+            ? 'bg-gradient-to-r from-indigo-500 to-violet-500 text-white shadow-indigo-200 hover:shadow-indigo-300 hover:scale-[1.01]'
+            : 'bg-gray-100 text-gray-300 cursor-not-allowed shadow-none'}`}
+      >
+        <span className="text-lg">✨</span>
+        <span>Let KAIRO Handle This</span>
+        {hasText && <span className="text-lg">→</span>}
+      </button>
+    </div>
+  );
+}
+
+/* ─── PROCESSING PHASE ───────────────────────────────────────────────────── */
+interface ProcessingPhaseProps {
+  pipeline: PipelineState;
+  text: string;
+}
+
+function ProcessingPhase({ pipeline, text }: ProcessingPhaseProps) {
+  const [visibleCount, setVisibleCount] = useState(0);
+  const [elapsedDots, setElapsedDots] = useState('');
+
+  // Stagger step reveals
+  useEffect(() => {
+    let i = 0;
+    const interval = setInterval(() => {
+      i++;
+      setVisibleCount(i);
+      if (i >= PIPELINE_STEPS.length) clearInterval(interval);
+    }, 220);
+    return () => clearInterval(interval);
+  }, []);
+
+  // Animated dots
+  useEffect(() => {
+    const interval = setInterval(() => {
+      setElapsedDots((d) => d.length >= 3 ? '' : d + '.');
+    }, 400);
+    return () => clearInterval(interval);
+  }, []);
+
+  const getStatus = (id: string): StepStatus => pipeline.steps[id] ?? 'idle';
+
+  return (
+    <div className="animate-fade-in">
+      {/* Content preview */}
+      <div className="bg-white rounded-2xl border border-gray-100 p-5 mb-6 shadow-sm">
+        <p className="text-[10px] font-extrabold text-gray-400 uppercase tracking-widest mb-2">Processing Signal</p>
+        <p className="text-sm text-gray-600 leading-relaxed line-clamp-3 font-medium">{text}</p>
+      </div>
+
+      {/* Pipeline card */}
+      <div className="bg-white rounded-3xl border border-gray-100 shadow-md overflow-hidden">
+        {/* Top bar */}
+        <div className="px-6 py-4 border-b border-gray-50 flex items-center justify-between"
+          style={{ background: 'linear-gradient(135deg, #fafafe 0%, #f5f5ff 100%)' }}>
+          <div className="flex items-center gap-2.5">
+            <div className="w-2 h-2 rounded-full bg-indigo-400 animate-ping" />
+            <span className="text-sm font-extrabold text-gray-800">
+              {pipeline.currentLabel || 'Starting'}{elapsedDots}
+            </span>
+          </div>
+          <span className="text-[10px] font-bold text-indigo-400 bg-indigo-50 border border-indigo-100 px-2.5 py-0.5 rounded-full uppercase tracking-wider">
+            AI Active
+          </span>
+        </div>
+
+        {/* Steps */}
+        <div className="p-6 space-y-0">
+          {PIPELINE_STEPS.map((step, i) => {
+            const status = getStatus(step.id);
+            const isVisible = i < visibleCount;
+            const isRunning = status === 'running';
+            const isDone = status === 'done' || (status === 'idle' && i < PIPELINE_STEPS.findIndex(s => getStatus(s.id) === 'running'));
+            const isLast = i === PIPELINE_STEPS.length - 1;
+
+            return (
+              <div key={step.id} className={`flex items-start gap-4 transition-all duration-500 ${isVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-2'}`}>
+                {/* Left: icon + connector */}
+                <div className="flex flex-col items-center">
+                  <div className={`w-10 h-10 rounded-2xl flex items-center justify-center text-lg shrink-0 transition-all duration-300 border
+                    ${isRunning ? 'bg-indigo-50 border-indigo-200 shadow-sm shadow-indigo-100 scale-110' :
+                      isDone ? 'bg-emerald-50 border-emerald-200' :
+                      'bg-gray-50 border-gray-100'}`}>
+                    {isDone ? '✅' : isRunning ? (
+                      <span className="text-indigo-500 text-base animate-spin inline-block">⚙️</span>
+                    ) : (
+                      <span className="opacity-40">{step.icon}</span>
+                    )}
+                  </div>
+                  {!isLast && (
+                    <div className={`w-0.5 h-6 my-1 rounded-full transition-all duration-500
+                      ${isDone ? 'bg-emerald-300' : 'bg-gray-100'}`} />
+                  )}
+                </div>
+
+                {/* Right: text */}
+                <div className={`pb-1 flex-1 flex items-center min-h-[40px]`}>
+                  <div>
+                    <p className={`text-sm font-bold transition-colors duration-200
+                      ${isRunning ? 'text-indigo-600' : isDone ? 'text-gray-700' : 'text-gray-300'}`}>
+                      {step.label}
+                    </p>
+                    <p className={`text-xs transition-colors duration-200
+                      ${isRunning ? 'text-indigo-400' : isDone ? 'text-gray-400' : 'text-gray-200'}`}>
+                      {isDone ? '✓ Complete' : isRunning ? step.sub : step.sub}
+                    </p>
+                  </div>
+                </div>
+              </div>
+            );
+          })}
+
+          {/* Done row */}
+          {pipeline.done && (
+            <div className="flex items-center gap-4 animate-fade-in mt-2">
+              <div className="w-10 h-10 rounded-2xl flex items-center justify-center text-lg bg-emerald-50 border border-emerald-200 shadow-sm shadow-emerald-100">
+                🎉
+              </div>
+              <div>
+                <p className="text-sm font-black text-emerald-600">Done!</p>
+                <p className="text-xs text-emerald-400">Mission created & Brain updated</p>
+              </div>
+            </div>
+          )}
+        </div>
+      </div>
+    </div>
+  );
+}
+
+/* ─── DONE PHASE ─────────────────────────────────────────────────────────── */
+interface DonePhaseProps {
+  item: FeedItem;
+  onReset: () => void;
+}
+
+function DonePhase({ item, onReset }: DonePhaseProps) {
+  const missionCount = item.result.missions.length;
+  const taskCount = item.result.tasks.length;
+
+  return (
+    <div className="animate-fade-in space-y-5">
+      {/* Success hero */}
+      <div className="rounded-3xl overflow-hidden shadow-xl text-white p-7 text-center relative"
+        style={{ background: 'linear-gradient(135deg, #4f46e5 0%, #7c3aed 100%)' }}>
+        <div className="absolute inset-0 opacity-10"
+          style={{ backgroundImage: 'radial-gradient(circle at 80% 20%, white 0%, transparent 60%)' }} />
+        <div className="relative z-10">
+          <div className="text-5xl mb-3">🎉</div>
+          <h2 className="text-2xl font-heading font-black mb-1">Done!</h2>
+          <p className="text-indigo-200 text-sm font-medium">"{item.title}"</p>
+
+          <div className="flex items-center justify-center gap-6 mt-5">
+            <div className="text-center">
+              <p className="text-3xl font-black">{missionCount || '—'}</p>
+              <p className="text-indigo-300 text-xs font-bold uppercase tracking-wider mt-0.5">Missions</p>
+            </div>
+            <div className="w-px h-10 bg-white/20" />
+            <div className="text-center">
+              <p className="text-3xl font-black">{taskCount || '—'}</p>
+              <p className="text-indigo-300 text-xs font-bold uppercase tracking-wider mt-0.5">Tasks</p>
+            </div>
+            <div className="w-px h-10 bg-white/20" />
+            <div className="text-center">
+              <p className="text-3xl font-black">✓</p>
+              <p className="text-indigo-300 text-xs font-bold uppercase tracking-wider mt-0.5">Brain</p>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {/* Generated items */}
+      {(missionCount > 0 || taskCount > 0) && (
+        <div className="bg-white rounded-2xl border border-gray-100 p-5 shadow-sm space-y-4">
+          {missionCount > 0 && (
+            <div>
+              <p className="text-[10px] font-extrabold text-gray-400 uppercase tracking-widest mb-2">Missions Created</p>
+              <div className="space-y-2">
+                {item.result.missions.map((m, i) => (
+                  <div key={i} className="flex items-center gap-3 bg-indigo-50 rounded-xl px-4 py-2.5 border border-indigo-100">
+                    <span className="text-indigo-500">🎯</span>
+                    <span className="text-sm font-semibold text-gray-800 truncate">{m.title}</span>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+          {taskCount > 0 && (
+            <div>
+              <p className="text-[10px] font-extrabold text-gray-400 uppercase tracking-widest mb-2">Tasks Planned</p>
+              <div className="space-y-1.5">
+                {item.result.tasks.slice(0, 5).map((t, i) => (
+                  <div key={i} className="flex items-center gap-2.5 px-3 py-2">
+                    <span className="w-1.5 h-1.5 rounded-full bg-violet-400 shrink-0" />
+                    <span className="text-sm text-gray-600 font-medium truncate">{t.title}</span>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+        </div>
+      )}
+
+      {/* Actions */}
+      <button
+        onClick={onReset}
+        className="w-full py-4 rounded-2xl font-black text-base bg-gradient-to-r from-indigo-500 to-violet-500 text-white shadow-lg shadow-indigo-200 hover:shadow-indigo-300 transition-all active:scale-[0.98] flex items-center justify-center gap-2"
+      >
+        <span>📋</span>
+        <span>Paste Another Signal</span>
+      </button>
+    </div>
+  );
+}
+
+/* ─── FEED CARD ──────────────────────────────────────────────────────────── */
+function FeedCard({ item }: { item: FeedItem }) {
+  const src = INBOX_SOURCE_OPTIONS.find(o => o.value === item.source || o.lemma === item.source);
+  return (
+    <div className="bg-white rounded-2xl border border-gray-100 px-5 py-4 shadow-sm hover:border-indigo-200 hover:shadow-indigo-50 transition-all duration-200 flex items-start gap-4">
+      <div className="w-8 h-8 rounded-xl bg-indigo-50 border border-indigo-100 flex items-center justify-center text-sm shrink-0">
+        ✅
+      </div>
+      <div className="flex-1 min-w-0">
+        <p className="text-sm font-bold text-gray-800 truncate">{item.title}</p>
+        <p className="text-xs text-gray-400 mt-0.5 truncate">{item.content?.slice(0, 80)}…</p>
+      </div>
+      <span className="text-[10px] font-bold bg-indigo-50 text-indigo-600 border border-indigo-100 px-2.5 py-1 rounded-full shrink-0 capitalize">
+        {src?.label || item.source}
+      </span>
+    </div>
+  );
+}
