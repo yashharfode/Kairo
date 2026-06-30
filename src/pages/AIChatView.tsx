@@ -2,6 +2,7 @@ import React, { useState, useRef, useEffect } from 'react';
 import { MessageSquare, Send, Loader2, Sparkles, Trash2, ArrowUpRight } from 'lucide-react';
 import { lemmaService } from '@/services/LemmaService';
 import { cn } from '@/lib/utils';
+import { Markdown } from '@/components/Markdown';
 
 interface ChatMessage {
   role: 'user' | 'ai';
@@ -10,7 +11,7 @@ interface ChatMessage {
 }
 
 const STARTER_PROMPTS = [
-  { label: "Pehle kya karu: DBMS exam prep or DSA Sheets?", query: "Help me decide: should I focus on DBMS exam preparation or crack DSA arrays sheet today?" },
+  { label: "Prioritize: DBMS exam prep vs. DSA Sheets", query: "Help me decide: should I focus on DBMS exam preparation or crack DSA arrays sheet today?" },
   { label: "Plan a 30-day DSA placement roadmap", query: "Can you generate a comprehensive 30-day DSA study roadmap for SDE internship placements?" },
   { label: "Review Gappy AI Hackathon milestones", query: "Summarize my Gappy AI Hackathon mission roadmap and active tasks." }
 ];
@@ -98,9 +99,13 @@ export const AIChatView = () => {
                 "p-4 sm:p-5 rounded-2xl shadow-sm max-w-2xl text-xs sm:text-sm leading-relaxed",
                 msg.role === 'user'
                   ? 'bg-primary text-white rounded-tr-none font-semibold'
-                  : 'bg-white border border-gray-150 rounded-tl-none text-text-primary font-medium'
+                  : 'bg-white border border-gray-150 rounded-tl-none text-text-primary'
               )}>
-                <p className="whitespace-pre-wrap">{msg.content}</p>
+                {msg.role === 'user' ? (
+                  <p className="whitespace-pre-wrap">{msg.content}</p>
+                ) : (
+                  <Markdown content={msg.content} />
+                )}
                 
                 <span className={cn(
                   "text-[9px] block mt-2 text-right font-bold",
