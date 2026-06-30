@@ -1,6 +1,7 @@
-import { useState, useRef, useEffect } from 'react';
-import { MessageSquare, Send, Loader2, Sparkles, Trash2 } from 'lucide-react';
+import React, { useState, useRef, useEffect } from 'react';
+import { MessageSquare, Send, Loader2, Sparkles, Trash2, ArrowUpRight } from 'lucide-react';
 import { lemmaService } from '@/services/LemmaService';
+import { cn } from '@/lib/utils';
 
 interface ChatMessage {
   role: 'user' | 'ai';
@@ -9,16 +10,16 @@ interface ChatMessage {
 }
 
 const STARTER_PROMPTS = [
-  "What should I focus on today?",
-  "Summarize my active missions.",
-  "How can I prepare for a hackathon in 2 days?",
+  { label: "Pehle kya karu: DBMS exam prep or DSA Sheets?", query: "Help me decide: should I focus on DBMS exam preparation or crack DSA arrays sheet today?" },
+  { label: "Plan a 30-day DSA placement roadmap", query: "Can you generate a comprehensive 30-day DSA study roadmap for SDE internship placements?" },
+  { label: "Review Gappy AI Hackathon milestones", query: "Summarize my Gappy AI Hackathon mission roadmap and active tasks." }
 ];
 
 export const AIChatView = () => {
   const [messages, setMessages] = useState<ChatMessage[]>([
     {
       role: 'ai',
-      content: "Hello! I'm KAIRO — your AI Executive OS. I have full context of your missions, memories, and tasks. Ask me anything.",
+      content: "Hello! I'm KAIRO — your AI Chief of Staff. I have full context of your memories, active missions, and execution timelines. Ask me anything.",
       timestamp: new Date().toISOString(),
     },
   ]);
@@ -46,7 +47,7 @@ export const AIChatView = () => {
     } catch (err) {
       setMessages(prev => [
         ...prev,
-        { role: 'ai', content: 'Sorry, I encountered an error reaching the KAIRO pod. Please try again.', timestamp: new Date().toISOString() },
+        { role: 'ai', content: 'Sorry, I encountered an error reaching the KAIRO pod database. Please try again.', timestamp: new Date().toISOString() },
       ]);
     } finally {
       setLoading(false);
@@ -59,102 +60,112 @@ export const AIChatView = () => {
   };
 
   return (
-    <div className="p-8 h-full flex flex-col font-body">
+    <div className="p-4 md:p-8 h-full flex flex-col font-body">
       <header className="mb-6 flex items-center justify-between">
         <div>
-          <h1 className="text-3xl font-heading font-bold text-text-primary flex items-center gap-3">
-            <MessageSquare className="w-8 h-8 text-primary" />
-            AI Chat
+          <h1 className="text-2xl md:text-3xl font-heading font-black text-text-primary flex items-center gap-3">
+            <MessageSquare className="w-7 h-7 md:w-8 md:h-8 text-primary animate-pulse" />
+            AI Chat Copilot
           </h1>
-          <p className="text-text-secondary mt-1">Direct conversation with your KAIRO intelligence layer.</p>
+          <p className="text-text-secondary text-xs md:text-sm mt-1">Direct conversation with your KAIRO executive intelligence layer.</p>
         </div>
         <button
           onClick={() => setMessages([{
             role: 'ai',
-            content: "Hello! I'm KAIRO — your AI Executive OS. Ask me anything.",
+            content: "Hello! I'm KAIRO. Ask me anything.",
             timestamp: new Date().toISOString(),
           }])}
-          className="flex items-center gap-2 text-sm text-text-secondary hover:text-red-500 transition-colors"
+          className="flex items-center gap-2 text-xs font-bold text-text-secondary hover:text-red-500 transition-colors border border-gray-200/60 px-3 py-1.5 rounded-xl bg-white"
         >
-          <Trash2 className="w-4 h-4" />
-          Clear
+          <Trash2 className="w-3.5 h-3.5" />
+          <span>Clear History</span>
         </button>
       </header>
 
-      <div className="flex-1 bg-surface border border-gray-100 rounded-2xl shadow-sm flex flex-col overflow-hidden min-h-0">
-        {/* Messages */}
-        <div className="flex-1 overflow-y-auto p-6 space-y-6 bg-gray-50/30">
+      <div className="flex-1 bg-white border border-gray-100 rounded-3xl shadow-sm flex flex-col overflow-hidden min-h-0">
+        
+        {/* Messages feed area */}
+        <div className="flex-1 overflow-y-auto p-4 md:p-6 space-y-6 bg-gray-50/20">
           {messages.map((msg, i) => (
-            <div key={i} className={`flex gap-4 ${msg.role === 'user' ? 'flex-row-reverse' : ''}`}>
+            <div key={i} className={cn("flex gap-3.5", msg.role === 'user' ? 'flex-row-reverse' : '')}>
               {msg.role === 'ai' && (
-                <div className="w-9 h-9 rounded-xl bg-primary flex items-center justify-center shrink-0 shadow-sm">
-                  <Sparkles className="w-4 h-4 text-white" />
+                <div className="w-9 h-9 rounded-xl bg-primary flex items-center justify-center shrink-0 shadow-sm shadow-primary/25">
+                  <Sparkles className="w-4.5 h-4.5 text-white" />
                 </div>
               )}
-              <div
-                className={`max-w-2xl px-5 py-4 rounded-2xl shadow-sm text-sm leading-relaxed ${
-                  msg.role === 'user'
-                    ? 'bg-primary text-white rounded-tr-none'
-                    : 'bg-white border border-gray-100 text-text-primary rounded-tl-none'
-                }`}
-              >
+              
+              <div className={cn(
+                "p-4 sm:p-5 rounded-2xl shadow-sm max-w-2xl text-xs sm:text-sm leading-relaxed",
+                msg.role === 'user'
+                  ? 'bg-primary text-white rounded-tr-none font-semibold'
+                  : 'bg-white border border-gray-150 rounded-tl-none text-text-primary font-medium'
+              )}>
                 <p className="whitespace-pre-wrap">{msg.content}</p>
-                <p className={`text-xs mt-2 ${msg.role === 'user' ? 'text-white/60' : 'text-text-secondary'}`}>
-                  {new Date(msg.timestamp).toLocaleTimeString()}
-                </p>
+                
+                <span className={cn(
+                  "text-[9px] block mt-2 text-right font-bold",
+                  msg.role === 'user' ? 'text-white/60' : 'text-text-secondary'
+                )}>
+                  {new Date(msg.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                </span>
               </div>
             </div>
           ))}
 
           {loading && (
-            <div className="flex gap-4">
-              <div className="w-9 h-9 rounded-xl bg-primary flex items-center justify-center shrink-0">
-                <Sparkles className="w-4 h-4 text-white" />
+            <div className="flex gap-3.5">
+              <div className="w-9 h-9 rounded-xl bg-primary flex items-center justify-center shrink-0 shadow-sm shadow-primary/25">
+                <Sparkles className="w-4.5 h-4.5 text-white" />
               </div>
-              <div className="bg-white border border-gray-100 rounded-2xl rounded-tl-none px-5 py-4 flex items-center gap-3 shadow-sm">
-                <Loader2 className="w-4 h-4 animate-spin text-primary" />
-                <span className="text-sm text-text-secondary">KAIRO is thinking...</span>
+              <div className="bg-white p-4 rounded-2xl rounded-tl-none shadow-sm border border-gray-150 flex items-center gap-2">
+                <Loader2 className="w-3.5 h-3.5 animate-spin text-primary shrink-0" />
+                <span className="text-xs font-semibold text-text-secondary">KAIRO is analyzing context...</span>
               </div>
             </div>
           )}
           <div ref={bottomRef} />
         </div>
 
-        {/* Starter prompts */}
+        {/* Suggestion Prompts */}
         {messages.length === 1 && (
-          <div className="px-6 pb-2 flex gap-2 flex-wrap bg-gray-50/30">
-            {STARTER_PROMPTS.map((p) => (
-              <button
-                key={p}
-                onClick={() => sendMessage(p)}
-                className="text-xs text-primary bg-secondary hover:bg-primary hover:text-white px-3 py-1.5 rounded-full transition-colors border border-primary/20"
-              >
-                {p}
-              </button>
-            ))}
+          <div className="p-4 bg-gray-50/40 border-t border-gray-100 flex flex-col gap-2 shrink-0">
+            <span className="text-[10px] font-extrabold text-text-secondary uppercase tracking-wider pl-2">Suggested Prompts</span>
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-2">
+              {STARTER_PROMPTS.map((promptObj, i) => (
+                <button
+                  key={i}
+                  onClick={() => sendMessage(promptObj.query)}
+                  className="text-left p-3 rounded-xl border border-gray-150 bg-white hover:bg-primary-light/35 hover:border-primary-border/20 transition-all text-xs font-semibold text-text-primary flex items-center justify-between"
+                >
+                  <span className="truncate max-w-[90%]">{promptObj.label}</span>
+                  <ArrowUpRight className="w-3.5 h-3.5 text-primary shrink-0" />
+                </button>
+              ))}
+            </div>
           </div>
         )}
 
-        {/* Input */}
-        <div className="p-4 border-t border-gray-100 bg-white">
-          <form onSubmit={handleSubmit} className="flex gap-3 max-w-4xl mx-auto">
-            <input
-              type="text"
+        {/* Chat input box */}
+        <div className="p-4 bg-white border-t border-gray-100 shrink-0">
+          <form onSubmit={handleSubmit} className="relative max-w-4xl mx-auto flex items-center">
+            <input 
+              type="text" 
               value={input}
-              onChange={e => setInput(e.target.value)}
-              placeholder="Ask KAIRO anything..."
+              onChange={(e) => setInput(e.target.value)}
+              placeholder="Ask KAIRO anything about your plans or timeline..."
+              className="w-full bg-background border border-gray-200 rounded-full pl-6 pr-14 py-3.5 text-xs sm:text-sm focus:ring-2 focus:ring-primary/20 outline-none text-text-primary font-medium"
               disabled={loading}
-              className="flex-1 bg-background border border-gray-200 rounded-full px-5 py-3 text-sm focus:ring-2 focus:ring-primary/20 outline-none"
             />
-            <button
+            <button 
               type="submit"
               disabled={loading || !input.trim()}
-              className="w-11 h-11 bg-primary hover:bg-primary-hover disabled:bg-primary/40 text-white rounded-full flex items-center justify-center transition-colors shadow-sm"
+              className="absolute right-2 top-1/2 -translate-y-1/2 w-9 h-9 bg-primary hover:bg-primary-hover disabled:opacity-50 text-white rounded-full flex items-center justify-center transition-all shadow-md active:scale-95"
             >
-              <Send className="w-4 h-4 ml-0.5" />
+              <Send className="w-3.5 h-3.5 ml-0.5" />
             </button>
           </form>
         </div>
+
       </div>
     </div>
   );
