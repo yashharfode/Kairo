@@ -3,14 +3,15 @@ import { getAuth } from "firebase/auth";
 import { getFirestore } from "firebase/firestore";
 import { getStorage } from "firebase/storage";
 
-// Your web app's Firebase configuration
+// Firebase configuration — reads from Vercel/production env vars first,
+// falls back to dev defaults so local development needs no extra .env setup.
 const firebaseConfig = {
-  apiKey: "AIzaSyD6ZyjXkVqlZJDvgo1vp8TwC18nt8fsIL4",
-  authDomain: "kairo-89f94.firebaseapp.com",
-  projectId: "kairo-89f94",
-  storageBucket: "kairo-89f94.firebasestorage.app",
-  messagingSenderId: "882994955861",
-  appId: "1:882994955861:web:8d7574d9811423ff48b6dc"
+  apiKey: import.meta.env.VITE_FIREBASE_API_KEY ?? "AIzaSyD6ZyjXkVqlZJDvgo1vp8TwC18nt8fsIL4",
+  authDomain: import.meta.env.VITE_FIREBASE_AUTH_DOMAIN ?? "kairo-89f94.firebaseapp.com",
+  projectId: import.meta.env.VITE_FIREBASE_PROJECT_ID ?? "kairo-89f94",
+  storageBucket: import.meta.env.VITE_FIREBASE_STORAGE_BUCKET ?? "kairo-89f94.firebasestorage.app",
+  messagingSenderId: import.meta.env.VITE_FIREBASE_MESSAGING_SENDER_ID ?? "882994955861",
+  appId: import.meta.env.VITE_FIREBASE_APP_ID ?? "1:882994955861:web:8d7574d9811423ff48b6dc",
 };
 
 // Initialize Firebase
