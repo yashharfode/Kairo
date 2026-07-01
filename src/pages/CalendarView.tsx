@@ -4,9 +4,9 @@ import dayGridPlugin from '@fullcalendar/daygrid';
 import timeGridPlugin from '@fullcalendar/timegrid';
 import interactionPlugin from '@fullcalendar/interaction';
 import { calendarService } from '@/services/CalendarService';
-import { 
+import {
   ChevronLeft, ChevronRight, Calendar as CalendarIcon, 
-  Sparkles, Check, Filter
+  Sparkles, Check, Filter, BellRing, X
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import '../styles/calendar.css';
@@ -177,6 +177,7 @@ export const CalendarView = () => {
   });
 
   const [activeDate, setActiveDate] = useState(new Date());
+  const [showReminder, setShowReminder] = useState(true);
 
   const calendarRef = useRef<FullCalendar>(null);
 
@@ -307,6 +308,42 @@ export const CalendarView = () => {
           </button>
         </div>
       </header>
+
+      {/* UPCOMING REMINDER ALERT BANNER */}
+      {showReminder && (
+        <div className="bg-gradient-to-r from-orange-500 to-red-500 rounded-2xl p-4 text-white flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 shadow-lg shadow-orange-500/20 shrink-0 animate-fade-in relative overflow-hidden">
+          {/* Background pattern */}
+          <div className="absolute top-0 right-0 -mt-8 -mr-8 w-32 h-32 bg-white opacity-10 rounded-full blur-2xl"></div>
+          
+          <div className="flex items-center gap-4 relative z-10">
+            <div className="bg-white/20 p-2.5 rounded-xl">
+              <BellRing className="w-5 h-5 text-white animate-bounce" />
+            </div>
+            <div>
+              <p className="text-[10px] font-black uppercase tracking-widest text-white/80 mb-0.5 flex items-center gap-1.5">
+                <span className="w-1.5 h-1.5 rounded-full bg-white animate-ping" />
+                Upcoming in 15 mins
+              </p>
+              <h4 className="font-bold text-sm leading-tight">DSA Arrays Practice - Prep Block</h4>
+            </div>
+          </div>
+          
+          <div className="flex items-center gap-3 relative z-10 w-full sm:w-auto justify-end">
+            <button 
+              onClick={() => {
+                setShowReminder(false);
+                showToast("Started DSA Arrays Practice timer.");
+              }} 
+              className="bg-white text-orange-600 px-4 py-2 rounded-xl text-xs font-black shadow-sm hover:bg-orange-50 transition-all active:scale-95"
+            >
+              Start Session
+            </button>
+            <button onClick={() => setShowReminder(false)} className="p-2 hover:bg-white/20 rounded-xl transition-all">
+              <X className="w-4 h-4 text-white" />
+            </button>
+          </div>
+        </div>
+      )}
 
       {/* THREE COLUMN GRID (Outlook Layout) */}
       <div className="flex-1 grid grid-cols-1 lg:grid-cols-12 gap-5 min-h-0 h-full overflow-hidden">
