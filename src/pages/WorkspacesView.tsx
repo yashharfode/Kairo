@@ -239,7 +239,7 @@ export const WorkspacesView = () => {
   const demoStats = activeWorkspace ? getProgressStats(activeWorkspace.demoChecklist) : { total: 0, completed: 0, percentage: 0 };
 
   return (
-    <div className="p-4 md:p-6 h-full flex flex-col font-body max-w-[1600px] mx-auto w-full space-y-6">
+    <div className="p-4 md:p-6 min-h-screen flex flex-col font-body max-w-[1600px] mx-auto w-full space-y-6">
       
       {/* HEADER SECTION */}
       <header className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
@@ -275,7 +275,7 @@ export const WorkspacesView = () => {
           <div className="w-8 h-8 border-4 border-primary border-t-transparent rounded-full animate-spin"></div>
         </div>
       ) : (
-        <div className="flex-1 grid grid-cols-1 lg:grid-cols-12 gap-5 items-start min-h-0">
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-5 items-start">
           
           {/* COLUMN 1: LEFT SIDEBAR (Ingest + Workspace List) */}
           <div className="lg:col-span-3 flex flex-col gap-5 w-full shrink-0">
