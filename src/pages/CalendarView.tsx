@@ -12,36 +12,29 @@ import { cn } from '@/lib/utils';
 import '../styles/calendar.css';
 
 // --- ENRICHED EVENT COLORS & STYLES ---
-const EVENT_COLORS: Record<string, { bg: string; border: string; text: string; label: string }> = {
-  task:        { bg: '#6366f1', border: '#4f46e5', text: '#ffffff', label: 'Task' },        // Indigo
-  deadline:    { bg: '#ef4444', border: '#dc2626', text: '#ffffff', label: 'Deadline' },    // Red
-  milestone:   { bg: '#f59e0b', border: '#d97706', text: '#ffffff', label: 'Milestone' },   // Amber
-  prep:        { bg: '#10b981', border: '#059669', text: '#ffffff', label: 'Prep Block' },  // Emerald
-  exam:        { bg: '#8b5cf6', border: '#7c3aed', text: '#ffffff', label: 'Exam' },        // Violet
-  hackathon:   { bg: '#ec4899', border: '#db2777', text: '#ffffff', label: 'Hackathon' },   // Pink
+const EVENT_COLORS: Record<string, { bg: string; border: string; text: string; label: string; cardBg: string }> = {
+  task:        { bg: '#6366f1', border: '#4f46e5', text: '#4f46e5', label: 'Task', cardBg: 'rgba(99, 102, 241, 0.07)' },
+  deadline:    { bg: '#ef4444', border: '#dc2626', text: '#dc2626', label: 'Deadline', cardBg: 'rgba(239, 68, 68, 0.07)' },
+  milestone:   { bg: '#f59e0b', border: '#d97706', text: '#d97706', label: 'Milestone', cardBg: 'rgba(245, 158, 11, 0.07)' },
+  prep:        { bg: '#10b981', border: '#059669', text: '#059669', label: 'Prep Block', cardBg: 'rgba(20, 184, 166, 0.07)' },
+  exam:        { bg: '#8b5cf6', border: '#7c3aed', text: '#7c3aed', label: 'Exam', cardBg: 'rgba(139, 92, 246, 0.07)' },
+  hackathon:   { bg: '#ec4899', border: '#db2777', text: '#db2777', label: 'Hackathon', cardBg: 'rgba(236, 72, 153, 0.07)' },
 };
 
 type EventCategory = keyof typeof EVENT_COLORS;
 
 // --- DYNAMIC SEED EVENTS ALIGNED TO THE CURRENT WEEK ---
 const SEED_EVENTS = [
-  // All day hackathon banner spanning multiple days
   { id: 'h-1', title: '🏆 Gappy AI Hackathon 2026', start: offsetDate(-2, 0), end: offsetDate(3, 0), allDay: true, category: 'hackathon', priority: 'High Priority' },
-  
-  // Weekly events
   { id: 'e-1', title: 'Hackathon Team Standup', start: offsetDate(-1, 18), end: offsetDate(-1, 19), category: 'deadline' },
   { id: 'e-2', title: 'Daily Review & Plan for Tomorrow', start: offsetDate(-1, 21, 30), end: offsetDate(-1, 22, 30), category: 'prep' },
-  
   { id: 'e-3', title: 'DSA Arrays Practice', start: offsetDate(0, 10), end: offsetDate(0, 12), category: 'prep', completed: true },
   { id: 'e-4', title: 'UI Design Milestone', start: offsetDate(0, 14), end: offsetDate(0, 16), category: 'milestone' },
   { id: 'e-5', title: 'Core Coding Sprint', start: offsetDate(0, 17), end: offsetDate(0, 19), category: 'prep' },
-
   { id: 'e-6', title: 'Placement Prep Block', start: offsetDate(1, 8), end: offsetDate(1, 9), category: 'prep' },
   { id: 'e-7', title: 'DBMS Normalization Review', start: offsetDate(1, 9), end: offsetDate(1, 10, 30), category: 'prep' },
-  
   { id: 'e-8', title: 'Fix API Integration', start: offsetDate(2, 11), end: offsetDate(2, 12, 30), category: 'task' },
   { id: 'e-9', title: 'Backend API Development', start: offsetDate(2, 19), end: offsetDate(2, 21), category: 'prep', completed: true },
-  
   { id: 'e-10', title: 'DSA Deep Dive', start: offsetDate(3, 8), end: offsetDate(3, 9), category: 'prep', completed: true },
 ];
 
@@ -57,12 +50,90 @@ function colorizeEvent(event: any): any {
   const colors = EVENT_COLORS[cat] ?? EVENT_COLORS.task;
   return {
     ...event,
-    backgroundColor: colors.bg,
-    borderColor: colors.border,
+    backgroundColor: colors.cardBg,
+    borderColor: colors.cardBg,
     textColor: colors.text,
     extendedProps: { ...event.extendedProps, category: cat, completed: event.completed, priority: event.priority },
   };
 }
+
+// --- OUTLOOK COMPACT DATE PICKER ---
+const MiniDatePicker = ({ activeDate, onChange }: { activeDate: Date; onChange: (d: Date) => void }) => {
+  const [currentYear, setCurrentYear] = useState(activeDate.getFullYear());
+  const [currentMonth, setCurrentMonth] = useState(activeDate.getMonth());
+
+  const months = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"];
+  
+  const daysInMonth = new Date(currentYear, currentMonth + 1, 0).getDate();
+  const firstDay = new Date(currentYear, currentMonth, 1).getDay();
+
+  const daysGrid: (number | null)[] = [];
+  for (let i = 0; i < firstDay; i++) daysGrid.push(null);
+  for (let d = 1; d <= daysInMonth; d++) daysGrid.push(d);
+
+  const handlePrev = () => {
+    if (currentMonth === 0) {
+      setCurrentMonth(11);
+      setCurrentYear(currentYear - 1);
+    } else {
+      setCurrentMonth(currentMonth - 1);
+    }
+  };
+
+  const handleNext = () => {
+    if (currentMonth === 11) {
+      setCurrentMonth(0);
+      setCurrentYear(currentYear + 1);
+    } else {
+      setCurrentMonth(currentMonth + 1);
+    }
+  };
+
+  return (
+    <div className="bg-white border border-[#0F172A]/[0.08] rounded-2xl p-4 shadow-sm text-xs">
+      <div className="flex justify-between items-center mb-3">
+        <span className="font-extrabold text-[11px] text-text-primary uppercase tracking-wider">
+          {months[currentMonth]} {currentYear}
+        </span>
+        <div className="flex gap-1.5">
+          <button type="button" onClick={handlePrev} className="p-1 hover:bg-slate-50 border border-slate-100 rounded-lg text-text-secondary font-bold">&lt;</button>
+          <button type="button" onClick={handleNext} className="p-1 hover:bg-slate-50 border border-slate-100 rounded-lg text-text-secondary font-bold">&gt;</button>
+        </div>
+      </div>
+      
+      <div className="grid grid-cols-7 gap-1 text-center font-bold text-slate-400 mb-1.5 text-[8px] tracking-wider uppercase">
+        <span>S</span><span>M</span><span>T</span><span>W</span><span>T</span><span>F</span><span>S</span>
+      </div>
+
+      <div className="grid grid-cols-7 gap-1 text-center font-mono font-bold text-text-primary text-[10px]">
+        {daysGrid.map((day, idx) => {
+          if (day === null) return <span key={`empty-${idx}`} />;
+          
+          const isSelected = activeDate.getDate() === day && activeDate.getMonth() === currentMonth && activeDate.getFullYear() === currentYear;
+          const isToday = new Date().getDate() === day && new Date().getMonth() === currentMonth && new Date().getFullYear() === currentYear;
+
+          return (
+            <button
+              key={`day-${day}`}
+              type="button"
+              onClick={() => onChange(new Date(currentYear, currentMonth, day))}
+              className={cn(
+                "w-5 h-5 rounded-full flex items-center justify-center transition-all active:scale-90 font-bold",
+                isSelected 
+                  ? "bg-primary text-white font-black" 
+                  : isToday 
+                  ? "border border-primary text-primary font-black" 
+                  : "hover:bg-slate-50"
+              )}
+            >
+              {day}
+            </button>
+          );
+        })}
+      </div>
+    </div>
+  );
+};
 
 // --- AI SCHEDULING WAVE CHART ---
 const WaveChart = () => {
@@ -88,12 +159,24 @@ const WaveChart = () => {
   );
 };
 
-// --- MAIN COMPONENT ---
+// --- MAIN VIEW ---
 export const CalendarView = () => {
   const [events, setEvents] = useState<any[]>([]);
   const [toast, setToast] = useState<string | null>(null);
   const [currentRangeText, setCurrentRangeText] = useState('June 28 - July 4, 2026');
   const [activeView, setActiveView] = useState<'dayGridMonth' | 'timeGridWeek' | 'timeGridDay'>('timeGridWeek');
+  
+  // Selected categories checkboxes
+  const [selectedCategories, setSelectedCategories] = useState<Record<EventCategory, boolean>>({
+    task: true,
+    deadline: true,
+    milestone: true,
+    prep: true,
+    exam: true,
+    hackathon: true
+  });
+
+  const [activeDate, setActiveDate] = useState(new Date());
 
   const calendarRef = useRef<FullCalendar>(null);
 
@@ -113,7 +196,6 @@ export const CalendarView = () => {
     load();
   }, []);
 
-  // Update date header text on load/navigation
   const updateTitle = () => {
     if (calendarRef.current) {
       const title = calendarRef.current.getApi().view.title;
@@ -122,7 +204,6 @@ export const CalendarView = () => {
   };
 
   useEffect(() => {
-    // Small timeout to allow FullCalendar to mount and render title
     const t = setTimeout(updateTitle, 200);
     return () => clearTimeout(t);
   }, [events, activeView]);
@@ -132,7 +213,6 @@ export const CalendarView = () => {
     setTimeout(() => setToast(null), 3000);
   };
 
-  // Custom Navigation callbacks
   const handlePrev = () => {
     calendarRef.current?.getApi().prev();
     updateTitle();
@@ -145,6 +225,7 @@ export const CalendarView = () => {
 
   const handleToday = () => {
     calendarRef.current?.getApi().today();
+    setActiveDate(new Date());
     updateTitle();
   };
 
@@ -153,6 +234,25 @@ export const CalendarView = () => {
     calendarRef.current?.getApi().changeView(viewName);
     updateTitle();
   };
+
+  const handleMiniDateChange = (date: Date) => {
+    setActiveDate(date);
+    calendarRef.current?.getApi().gotoDate(date);
+    updateTitle();
+  };
+
+  const toggleCategory = (cat: EventCategory) => {
+    setSelectedCategories(prev => ({
+      ...prev,
+      [cat]: !prev[cat]
+    }));
+  };
+
+  // Filter events by checkboxes
+  const filteredEvents = events.filter(e => {
+    const cat = e.extendedProps?.category as EventCategory;
+    return selectedCategories[cat] !== false;
+  });
 
   return (
     <div className="p-4 md:p-6 h-[calc(100vh-80px)] flex flex-col font-body bg-[#fbfbfe] overflow-hidden space-y-4">
@@ -165,8 +265,8 @@ export const CalendarView = () => {
         </div>
       )}
 
-      {/* Header */}
-      <header className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 pb-2">
+      {/* Top Header */}
+      <header className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 shrink-0 pb-1">
         <div>
           <h1 className="text-3xl font-heading font-black text-text-primary tracking-tight">Mission Calendar</h1>
           <p className="text-text-secondary text-sm font-semibold mt-1">
@@ -202,21 +302,56 @@ export const CalendarView = () => {
             ))}
           </div>
 
-          <button onClick={() => alert('Filters: show all')} className="p-2 border border-gray-200 hover:bg-gray-50 bg-white rounded-xl active:scale-95 transition-all text-text-secondary hover:text-text-primary">
+          <button onClick={() => alert('Filters: show all')} className="p-2 border border-gray-200 hover:bg-gray-50 bg-white rounded-xl active:scale-95 transition-all text-text-secondary">
             <Filter className="w-4 h-4" />
           </button>
         </div>
       </header>
 
-      {/* Main Grid Content */}
+      {/* THREE COLUMN GRID (Outlook Layout) */}
       <div className="flex-1 grid grid-cols-1 lg:grid-cols-12 gap-5 min-h-0 h-full overflow-hidden">
         
-        {/* LEFT COLUMN: THE CALENDAR (9-Cols) */}
-        <div className="lg:col-span-9 flex flex-col h-full bg-white rounded-[2rem] border border-[#0F172A]/[0.08] shadow-sm p-5 min-h-0 relative">
+        {/* COLUMN 1: OUTLOOK LEFT PANEL (lg:col-span-2) */}
+        <div className="lg:col-span-2.5 flex flex-col gap-4 h-full overflow-y-auto scrollbar-none pb-4 shrink-0">
           
-          {/* Custom Subheader Navigation */}
-          <div className="flex flex-wrap items-center justify-between gap-4 border-b border-gray-100 pb-4 mb-4">
+          {/* Mini Month Picker */}
+          <MiniDatePicker activeDate={activeDate} onChange={handleMiniDateChange} />
+
+          {/* Selectable Categories list (Outlook calendar toggles) */}
+          <div className="bg-white border border-[#0F172A]/[0.08] rounded-2xl p-4 shadow-sm space-y-4">
+            <div className="border-b border-slate-100 pb-2">
+              <h4 className="font-heading font-black text-[10px] text-text-secondary uppercase tracking-wider">My Calendars</h4>
+            </div>
             
+            <div className="space-y-2.5">
+              {Object.entries(EVENT_COLORS).map(([cat, val]) => {
+                const isChecked = selectedCategories[cat as EventCategory] !== false;
+                return (
+                  <label 
+                    key={cat} 
+                    className="flex items-center gap-2.5 text-xs font-bold text-text-primary cursor-pointer select-none group"
+                  >
+                    <input 
+                      type="checkbox"
+                      checked={isChecked}
+                      onChange={() => toggleCategory(cat as EventCategory)}
+                      className="w-4 h-4 rounded text-primary focus:ring-primary/20 border-slate-200"
+                    />
+                    <span className="w-2.5 h-2.5 rounded-full shrink-0" style={{ backgroundColor: val.bg }} />
+                    <span className="group-hover:text-primary transition-colors text-[11px]">{val.label}s</span>
+                  </label>
+                );
+              })}
+            </div>
+          </div>
+
+        </div>
+
+        {/* COLUMN 2: THE MAIN CALENDAR GRID (lg:col-span-6.5) */}
+        <div className="lg:col-span-6.5 flex flex-col h-full bg-white rounded-[2rem] border border-[#0F172A]/[0.08] shadow-sm p-5 min-h-0 relative">
+          
+          {/* Calendar Navigation header */}
+          <div className="flex items-center justify-between gap-4 border-b border-gray-100 pb-4 mb-4">
             <div className="flex items-center gap-3">
               <div className="flex items-center border border-gray-200 rounded-xl bg-white overflow-hidden shadow-sm">
                 <button onClick={handlePrev} className="p-2 hover:bg-gray-50 border-r border-gray-200 active:scale-95 transition-all"><ChevronLeft className="w-4 h-4 text-text-primary" /></button>
@@ -226,20 +361,6 @@ export const CalendarView = () => {
                 {currentRangeText}
               </h2>
             </div>
-
-            {/* Custom Interactive Legend Pills */}
-            <div className="flex flex-wrap gap-1.5">
-              {Object.entries(EVENT_COLORS).map(([cat, val]) => (
-                <div 
-                  key={cat} 
-                  className="flex items-center gap-1.5 text-[9px] font-black uppercase tracking-wider text-text-secondary bg-slate-50 border border-slate-200/50 px-2.5 py-1 rounded-md"
-                >
-                  <span className="w-1.5 h-1.5 rounded-full shrink-0" style={{ backgroundColor: val.bg }} />
-                  <span>{val.label}s</span>
-                </div>
-              ))}
-            </div>
-
           </div>
 
           {/* FullCalendar Wrapper */}
@@ -248,10 +369,10 @@ export const CalendarView = () => {
               ref={calendarRef}
               plugins={[dayGridPlugin, timeGridPlugin, interactionPlugin]}
               initialView="timeGridWeek"
-              headerToolbar={false} // Disable default toolbar
+              headerToolbar={false} 
               height="100%"
               expandRows={true}
-              events={events}
+              events={filteredEvents}
               editable={true}
               selectable={true}
               droppable={true}
@@ -264,7 +385,30 @@ export const CalendarView = () => {
                 const label = EVENT_COLORS[cat]?.label ?? 'Task';
                 showToast(`${label}: ${info.event.title}`);
               }}
-              // CUSTOM EVENT CONTENT RENDERER
+              // OUTLOOK DAY HEADER FORMATTER
+              dayHeaderContent={(arg) => {
+                const date = arg.date;
+                const dayName = date.toLocaleDateString('en-US', { weekday: 'short' });
+                const dayNum = date.getDate();
+                const isToday = date.toDateString() === new Date().toDateString();
+
+                return (
+                  <div className="flex flex-col items-center py-1">
+                    <span className="text-[9px] font-bold text-slate-400 uppercase tracking-widest leading-none">
+                      {dayName}
+                    </span>
+                    <div 
+                      className={cn(
+                        "w-5.5 h-5.5 rounded-full flex items-center justify-center text-[10px] font-black font-mono mt-1 transition-all",
+                        isToday ? "bg-primary text-white shadow-sm" : "text-text-primary"
+                      )}
+                    >
+                      {dayNum}
+                    </div>
+                  </div>
+                );
+              }}
+              // OUTLOOK PASTEL EVENT CARD RENDERER
               eventContent={(eventInfo) => {
                 const cat = eventInfo.event.extendedProps?.category ?? 'task';
                 const completed = eventInfo.event.extendedProps?.completed;
@@ -274,24 +418,33 @@ export const CalendarView = () => {
                 return (
                   <div 
                     className="p-2 h-full flex flex-col justify-between text-left relative overflow-hidden group select-none"
-                    style={{ borderLeft: `4px solid ${colorVal.border}` }}
+                    style={{ borderLeft: `3.5px solid ${colorVal.bg}` }}
                   >
                     <div>
-                      <div className="text-[9px] opacity-80 font-mono font-bold leading-none mb-1 text-white">
+                      <div 
+                        className="text-[8.5px] font-mono font-bold leading-none mb-1"
+                        style={{ color: colorVal.text }}
+                      >
                         {eventInfo.timeText || 'All Day'}
                       </div>
-                      <div className="font-sans font-black text-[11px] leading-tight text-white flex items-start gap-1">
-                        {completed && <Check className="w-3.5 h-3.5 text-white shrink-0 mt-0.5 stroke-[3px]" />}
+                      <div 
+                        className="font-sans font-black text-[10.5px] leading-tight flex items-start gap-1"
+                        style={{ color: colorVal.text }}
+                      >
+                        {completed && <Check className="w-3 h-3 shrink-0 mt-0.5 stroke-[3px]" style={{ color: colorVal.text }} />}
                         <span className="line-clamp-2">{eventInfo.event.title}</span>
                       </div>
                     </div>
                     
                     <div className="mt-1.5 flex items-center justify-between">
-                      <span className="text-[8px] font-black uppercase tracking-wider bg-white/25 text-white px-1.5 py-0.5 rounded-md">
+                      <span 
+                        className="text-[7.5px] font-black uppercase tracking-wider px-1.5 py-0.5 rounded"
+                        style={{ backgroundColor: 'rgba(255,255,255,0.7)', color: colorVal.text }}
+                      >
                         {colorVal.label}
                       </span>
                       {priority && (
-                        <span className="text-[7.5px] font-black uppercase text-red-100 bg-red-600/40 px-1.5 rounded">
+                        <span className="text-[7px] font-black uppercase text-red-700 bg-red-50 border border-red-200/50 px-1.5 rounded">
                           {priority}
                         </span>
                       )}
@@ -310,8 +463,8 @@ export const CalendarView = () => {
 
         </div>
 
-        {/* RIGHT COLUMN: SIDEBAR WIDGETS (3-Cols) */}
-        <div className="lg:col-span-3 flex flex-col gap-4 w-full h-full overflow-y-auto scrollbar-none pb-6 pr-1">
+        {/* COLUMN 3: RIGHT PANEL HUD DETAILS (lg:col-span-3) */}
+        <div className="lg:col-span-3 flex flex-col gap-4 h-full overflow-y-auto scrollbar-none pb-6 pr-1">
           
           {/* 1. TODAY'S FOCUS */}
           <div className="mc-card p-5 space-y-4">
@@ -390,30 +543,6 @@ export const CalendarView = () => {
               <Sparkles className="w-3.5 h-3.5" />
               Optimize My Schedule
             </button>
-          </div>
-
-          {/* 4. CALENDAR LEGEND */}
-          <div className="mc-card p-5 space-y-4">
-            <h3 className="font-heading font-black text-xs text-text-primary uppercase tracking-wider border-b border-slate-100 pb-2">Calendar Legend</h3>
-            
-            <div className="space-y-2">
-              {[
-                { label: 'Prep Blocks', desc: 'Focused study sessions', color: 'bg-[#10b981]' },
-                { label: 'Tasks', desc: 'Actionable tasks', color: 'bg-[#6366f1]' },
-                { label: 'Milestones', desc: 'Major deliverables', color: 'bg-[#f59e0b]' },
-                { label: 'Deadlines', desc: 'Important due dates', color: 'bg-[#ef4444]' },
-                { label: 'Hackathons', desc: 'Active hackathons', color: 'bg-[#ec4899]' },
-                { label: 'Exams', desc: 'Upcoming exams', color: 'bg-[#8b5cf6]' }
-              ].map(item => (
-                <div key={item.label} className="flex items-center gap-3 text-xs">
-                  <span className={cn("w-2 h-2 rounded-full shrink-0", item.color)} />
-                  <div className="min-w-0">
-                    <span className="font-bold text-text-primary block leading-none">{item.label}</span>
-                    <span className="text-[9px] text-text-secondary block mt-0.5 leading-none">{item.desc}</span>
-                  </div>
-                </div>
-              ))}
-            </div>
           </div>
 
         </div>
