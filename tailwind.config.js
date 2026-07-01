@@ -32,8 +32,9 @@ export default {
         info: '#6BAED6',
       },
       fontFamily: {
-        heading: ['Geist', 'sans-serif'],
+        heading: ['Space Grotesk', 'sans-serif'],
         body: ['Inter', 'sans-serif'],
+        mono: ['IBM Plex Mono', 'monospace'],
       },
     },
   },

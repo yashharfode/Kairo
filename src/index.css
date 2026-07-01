@@ -116,3 +116,20 @@
   -webkit-box-orient: vertical;
   overflow: hidden;
 }
+
+/* Mission Control Design System Components */
+@layer components {
+  .mc-card {
+    @apply bg-white rounded-3xl transition-all duration-200 border border-[#0F172A]/[0.08];
+  }
+  
+  @media (prefers-reduced-motion: no-preference) {
+    .mc-card:hover {
+      @apply -translate-y-0.5 shadow-md border-[#0F172A]/15;
+    }
+  }
+
+  .mc-btn-active {
+    @apply active:scale-95 transition-transform;
+  }
+}
