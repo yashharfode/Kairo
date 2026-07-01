@@ -22,8 +22,7 @@ export const AIChatView = () => {
     {
       role: 'ai',
       content: "Hello! I'm KAIRO — your elite AI Chief of Staff. I have full context of your memories, active missions, and execution timelines. How can we dominate today?",
-      timestamp: new Date().toISOString(),
-      options: ["What's my highest priority today?", "Scan for new opportunities", "Review active missions"]
+      timestamp: new Date().toISOString()
     },
   ]);
   const [input, setInput] = useState('');
@@ -99,7 +98,7 @@ User query: ${text}`;
   };
 
   return (
-    <div className="p-4 md:p-6 h-full flex flex-col font-body bg-[#f9f9fd] overflow-hidden max-w-[1600px] mx-auto w-full">
+    <div className="p-4 md:p-8 h-full flex flex-col font-body bg-[#f9f9fd] overflow-hidden">
       {/* ── HEADER ── */}
       <header className="mb-5 flex items-center justify-between">
         <div>
