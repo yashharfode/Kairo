@@ -1,7 +1,8 @@
 import { useEffect, useState } from 'react';
 import { 
-  CheckSquare, Circle, PlayCircle, CheckCircle2, Target, Plus, Search, Filter, 
-  Sparkles, Clock, AlertTriangle, ChevronRight, Edit3, Calendar, MoreVertical, Check
+  CheckSquare, CheckCircle2, Target, Plus, Search, Filter, 
+  Sparkles, Clock, AlertTriangle, MoreVertical, Check,
+  Zap, Play, Pause, RefreshCw, BarChart2
 } from 'lucide-react';
 import { missionService } from '@/services/MissionService';
 import type { Mission, Task } from '@/types/schema';
@@ -16,51 +17,66 @@ const TASK_TAGS: Record<string, string[]> = {
   'Solve 10 problems from Contest (Arrays)': ['Contest']
 };
 
-// --- SEED MISSIONS MATCHING MOCKUP ---
-const SEED_MISSIONS: Mission[] = [
+// --- SEED MISSIONS WITH PREMIUM METADATA ---
+const SEED_MISSIONS: (Mission & { daysRemaining: number; riskLevel: string; currentStage: string; priority: string; currentFocus: string })[] = [
   {
     id: 'm-dsa',
     title: 'DSA Placement Accelerator (Striver A-Z)',
-    description: 'Daily target: 5 problems, currently on Arrays & Strings.',
+    description: 'Drill core data structures and algorithms to clear top-tier tech technical interviews.',
     targetDate: 'Jul 30, 2026',
     status: 'active',
     userId: 'mock-user',
     startDate: new Date().toISOString(),
     createdAt: new Date().toISOString(),
     updatedAt: new Date().toISOString(),
+    daysRemaining: 29,
+    riskLevel: 'On Track',
+    currentStage: 'Practice & Review',
+    priority: 'High',
+    currentFocus: 'Arrays & Strings DFS'
   },
   {
     id: 'm-mern',
     title: 'CollegeConnect MERN App Deployment',
-    description: 'Deploy MERN client and server to cloud instances.',
+    description: 'Establish secure deployment pipeline and orchestrate multi-instance database clusters.',
     targetDate: 'Jul 15, 2026',
     status: 'active',
     userId: 'mock-user',
     startDate: new Date().toISOString(),
     createdAt: new Date().toISOString(),
     updatedAt: new Date().toISOString(),
+    daysRemaining: 14,
+    riskLevel: 'On Track',
+    currentStage: 'Server Config',
+    priority: 'Medium',
+    currentFocus: 'CORS & Staging Logs'
   },
   {
     id: 'm-gappy',
     title: 'Gappy AI Hackathon 2026',
-    description: 'Build KAIRO landing page and record demo video.',
+    description: 'Deliver KAIRO Chief of Staff dashboard pitch deck, demo videos, and live dev portal.',
     targetDate: 'Jul 4, 2026',
     status: 'active',
     userId: 'mock-user',
     startDate: new Date().toISOString(),
     createdAt: new Date().toISOString(),
     updatedAt: new Date().toISOString(),
+    daysRemaining: 3,
+    riskLevel: 'At Risk',
+    currentStage: 'Pitch Preparation',
+    priority: 'High',
+    currentFocus: 'Live Demo Scenarios'
   }
 ];
 
-// --- SEED TASKS MATCHING MOCKUP ---
+// --- SEED TASKS MATCHING SCHEMA ---
 const SEED_TASKS: Task[] = [
   {
     id: 't-1',
     missionId: 'm-dsa',
     title: 'Review Striver Arrays: Two Pointers & Sliding Window',
     description: 'Drill medium difficulty sliding window challenges.',
-    priority: 'urgent', // maps to High
+    priority: 'urgent',
     status: 'in_progress',
     estimatedDuration: 90,
     userId: 'mock-user',
@@ -72,7 +88,7 @@ const SEED_TASKS: Task[] = [
     missionId: 'm-dsa',
     title: 'Complete Sorting Algorithms & Recursion Basics',
     description: 'Review quicksort and mergesort step structures.',
-    priority: 'high', // maps to Medium
+    priority: 'high',
     status: 'todo',
     estimatedDuration: 60,
     userId: 'mock-user',
@@ -84,7 +100,7 @@ const SEED_TASKS: Task[] = [
     missionId: 'm-dsa',
     title: 'Solve 15 Sliding Window problems on Leetcode',
     description: 'Targeting specific medium arrays items.',
-    priority: 'high', // maps to Medium
+    priority: 'high',
     status: 'todo',
     estimatedDuration: 120,
     userId: 'mock-user',
@@ -96,7 +112,7 @@ const SEED_TASKS: Task[] = [
     missionId: 'm-dsa',
     title: 'Revise Binary Search & Variations',
     description: 'Focus on search space reduction techniques.',
-    priority: 'medium', // maps to Low
+    priority: 'medium',
     status: 'todo',
     estimatedDuration: 45,
     userId: 'mock-user',
@@ -108,15 +124,13 @@ const SEED_TASKS: Task[] = [
     missionId: 'm-dsa',
     title: 'Solve 10 problems from Contest (Arrays)',
     description: 'Practice contest level problems for speed.',
-    priority: 'medium', // maps to Low
+    priority: 'low',
     status: 'todo',
     estimatedDuration: 90,
     userId: 'mock-user',
     createdAt: new Date().toISOString(),
     updatedAt: new Date().toISOString(),
   },
-
-  // MERN tasks
   {
     id: 't-mern-1',
     missionId: 'm-mern',
@@ -141,13 +155,11 @@ const SEED_TASKS: Task[] = [
     createdAt: new Date().toISOString(),
     updatedAt: new Date().toISOString(),
   },
-
-  // Gappy tasks
   {
     id: 't-gappy-1',
     missionId: 'm-gappy',
     title: 'Record KAIRO features walkthrough video',
-    description: ' Crisp 2-minute feature highlight screen capture.',
+    description: 'Crisp 2-minute feature highlight screen capture.',
     priority: 'urgent',
     status: 'completed',
     estimatedDuration: 120,
@@ -157,101 +169,132 @@ const SEED_TASKS: Task[] = [
   }
 ];
 
-// --- MINI RADIAL GAUGE ---
-const MiniRadialGauge = ({ value }: { value: number }) => {
-  const size = 38;
-  const strokeWidth = 3.5;
+// --- STABLE MOCK ENRICHMENTS FOR EACH TASK ---
+const getTaskEnrichments = (title: string, id: string) => {
+  const hash = title.charCodeAt(0) + title.charCodeAt(title.length - 1) + id.charCodeAt(id.length - 1);
+  
+  // AI Confidence: 88% to 99%
+  const aiConfidence = 88 + (hash % 12);
+  
+  // Difficulty
+  const difficulties = ['Easy', 'Medium', 'Hard'];
+  const difficulty = difficulties[hash % difficulties.length];
+  
+  // Category
+  const tags = TASK_TAGS[title] || ['Engineering'];
+  const category = tags[0];
+
+  return { aiConfidence, difficulty, category };
+};
+
+// --- MULTI-SEGMENT DONUT CHART ---
+const TaskDonutChart = ({ total, high, med, low }: { total: number; high: number; med: number; low: number }) => {
+  const size = 130;
+  const radius = 42;
+  const circ = 2 * Math.PI * radius; // ~263.89
+  const strokeWidth = 10;
+
+  const highPct = total > 0 ? (high / total) * 100 : 0;
+  const medPct = total > 0 ? (med / total) * 100 : 0;
+  const lowPct = total > 0 ? (low / total) * 100 : 0;
+
+  const strokeHigh = (highPct / 100) * circ;
+  const strokeMed = (medPct / 100) * circ;
+  const strokeLow = (lowPct / 100) * circ;
+
+  return (
+    <div className="relative flex items-center justify-center w-full my-4">
+      <svg width={size} height={size} viewBox={`0 0 ${size} ${size}`} className="-rotate-90">
+        <circle cx={size/2} cy={size/2} r={radius} fill="none" stroke="#F1F1F4" strokeWidth={strokeWidth} />
+        
+        {/* Urgent/High Segment */}
+        {strokeHigh > 0 && (
+          <circle cx={size/2} cy={size/2} r={radius} fill="none" stroke="#EF4444" strokeWidth={strokeWidth}
+            strokeDasharray={`${strokeHigh} ${circ}`} strokeDashoffset={0}
+          />
+        )}
+        
+        {/* Medium Segment */}
+        {strokeMed > 0 && (
+          <circle cx={size/2} cy={size/2} r={radius} fill="none" stroke="#F59E0B" strokeWidth={strokeWidth}
+            strokeDasharray={`${strokeMed} ${circ}`} strokeDashoffset={-strokeHigh}
+          />
+        )}
+
+        {/* Low Segment */}
+        {strokeLow > 0 && (
+          <circle cx={size/2} cy={size/2} r={radius} fill="none" stroke="#10B981" strokeWidth={strokeWidth}
+            strokeDasharray={`${strokeLow} ${circ}`} strokeDashoffset={-(strokeHigh + strokeMed)}
+          />
+        )}
+      </svg>
+      <div className="absolute inset-0 flex flex-col items-center justify-center">
+        <span className="text-[32px] font-mono font-black text-[#111827] leading-none">{total}</span>
+        <span className="text-[11px] text-[#6B7280] font-bold uppercase tracking-wider mt-1">Total</span>
+      </div>
+    </div>
+  );
+};
+
+const ProgressRing = ({ value }: { value: number }) => {
+  const size = 120;
+  const strokeWidth = 10;
   const radius = (size - strokeWidth) / 2;
   const circ = 2 * Math.PI * radius;
   const offset = circ - (value / 100) * circ;
 
   return (
-    <div className="relative flex items-center justify-center shrink-0 w-10 h-10">
+    <div className="relative flex items-center justify-center shrink-0">
       <svg width={size} height={size} viewBox={`0 0 ${size} ${size}`} className="-rotate-90">
-        <circle cx={size/2} cy={size/2} r={radius} fill="none" stroke="rgba(15,23,42,0.05)" strokeWidth={strokeWidth} />
+        <circle cx={size/2} cy={size/2} r={radius} fill="none" stroke="rgba(90,92,216,0.05)" strokeWidth={strokeWidth} />
         <circle cx={size/2} cy={size/2} r={radius} fill="none"
-          stroke="#4F46E5" strokeWidth={strokeWidth} strokeLinecap="round"
+          stroke="#5A5CD8" strokeWidth={strokeWidth} strokeLinecap="round"
           strokeDasharray={circ} strokeDashoffset={offset}
-          className="transition-all duration-500"
-        />
-      </svg>
-      <div className="absolute inset-0 flex flex-col items-center justify-center text-[8px] font-mono font-black text-text-primary leading-none">
-        <span>{value}%</span>
-      </div>
-    </div>
-  );
-};
-
-// --- MULTI-SEGMENT DONUT CHART ---
-const TaskDonutChart = () => {
-  const size = 110;
-  const radius = 34;
-  const circ = 2 * Math.PI * radius; // 213.6
-  const strokeWidth = 8;
-
-  // Mock segment parts out of 12 total tasks
-  const highPct = (4 / 12) * 100;
-  const medPct = (5 / 12) * 100;
-  const lowPct = (3 / 12) * 100;
-
-  return (
-    <div className="relative flex items-center justify-center w-full h-28 mt-2">
-      <svg width={size} height={size} viewBox={`0 0 ${size} ${size}`} className="-rotate-90">
-        <circle cx={size/2} cy={size/2} r={radius} fill="none" stroke="rgba(15,23,42,0.04)" strokeWidth={strokeWidth} />
-        
-        {/* Segment 1: High (Red) - 33% */}
-        <circle cx={size/2} cy={size/2} r={radius} fill="none" stroke="#EF4444" strokeWidth={strokeWidth}
-          strokeDasharray={circ} strokeDashoffset={circ - (highPct/100) * circ}
-        />
-        {/* Segment 2: Med (Orange) - offset 120deg */}
-        <circle cx={size/2} cy={size/2} r={radius} fill="none" stroke="#F59E0B" strokeWidth={strokeWidth}
-          strokeDasharray={circ} strokeDashoffset={circ - (medPct/100) * circ}
-          className="rotate-[120deg] origin-center"
-        />
-        {/* Segment 3: Low (Green) - offset 270deg */}
-        <circle cx={size/2} cy={size/2} r={radius} fill="none" stroke="#10B981" strokeWidth={strokeWidth}
-          strokeDasharray={circ} strokeDashoffset={circ - (lowPct/100) * circ}
-          className="rotate-[270deg] origin-center"
+          className="transition-all duration-700 ease-out"
         />
       </svg>
       <div className="absolute inset-0 flex flex-col items-center justify-center">
-        <span className="text-2xl font-mono font-black text-text-primary leading-none">12</span>
-        <span className="text-[8px] text-text-secondary font-bold uppercase tracking-wider mt-0.5">Total</span>
+        <span className="text-[28px] font-mono font-black text-[#111827] leading-none">{value}%</span>
+        <span className="text-[10px] text-[#6B7280] font-bold uppercase tracking-wider mt-1">Done</span>
       </div>
     </div>
   );
 };
 
-// --- AI INSIGHT WAVE CHART ---
-const WaveChart = () => {
-  return (
-    <div className="relative w-full h-12 mt-3">
-      <svg className="w-full h-full" viewBox="0 0 200 40" preserveAspectRatio="none">
-        <path
-          d="M 0 30 C 30 25, 60 5, 90 10 C 120 18, 150 35, 180 20 L 200 22"
-          fill="none"
-          stroke="#5A5CD8"
-          strokeWidth="2"
-        />
-        <path
-          d="M 0 30 C 30 25, 60 5, 90 10 C 120 18, 150 35, 180 20 L 200 22 L 200 40 L 0 40 Z"
-          fill="rgba(90, 92, 216, 0.05)"
-        />
-        <circle cx="90" cy="10" r="4" fill="#5A5CD8" stroke="white" strokeWidth="1.5" />
-      </svg>
-      <span className="absolute top-0 left-[64px] text-[8px] font-mono font-bold text-white bg-slate-900 border border-white/10 px-1.5 py-0.5 rounded shadow-md">
-        9:00 AM - 12:00 PM
-      </span>
-    </div>
-  );
-};
-
-// --- MAIN VIEW ---
 export const TasksView = () => {
-  const [missions, setMissions] = useState<Mission[]>([]);
+  const [missions, setMissions] = useState<(Mission & { daysRemaining: number; riskLevel: string; currentStage: string; priority: string; currentFocus: string })[]>([]);
   const [tasks, setTasks] = useState<Task[]>([]);
   const [selectedMissionId, setSelectedMissionId] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
+  const [searchTerm, setSearchTerm] = useState('');
+  
+  // Timer State
+  const [timeLeft, setTimeLeft] = useState(1500); // 25:00
+  const [timerRunning, setTimerRunning] = useState(false);
+
+  useEffect(() => {
+    let interval: any = null;
+    if (timerRunning) {
+      interval = setInterval(() => {
+        setTimeLeft((time) => (time > 0 ? time - 1 : 0));
+      }, 1000);
+    } else {
+      clearInterval(interval);
+    }
+    return () => clearInterval(interval);
+  }, [timerRunning]);
+
+  const toggleTimer = () => setTimerRunning(!timerRunning);
+  const resetTimer = () => {
+    setTimerRunning(false);
+    setTimeLeft(1500);
+  };
+
+  const formatTime = (seconds: number) => {
+    const mins = Math.floor(seconds / 60);
+    const secs = seconds % 60;
+    return `${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
+  };
 
   useEffect(() => {
     const loadTasks = async () => {
@@ -261,10 +304,17 @@ export const TasksView = () => {
           missionService.getTasks(),
         ]);
         
-        // Merge seed mockups with Lemma backend values
+        // Enrich default DB missions with premium metadata
         const mergedMissions = [
           ...SEED_MISSIONS,
-          ...m.filter(item => !SEED_MISSIONS.some(sm => sm.id === item.id))
+          ...m.filter(item => !SEED_MISSIONS.some(sm => sm.id === item.id)).map(item => ({
+            ...item,
+            daysRemaining: item.targetDate ? Math.max(1, Math.ceil((new Date(item.targetDate).getTime() - new Date().getTime()) / (1000 * 3600 * 24))) : 7,
+            riskLevel: 'On Track',
+            currentStage: 'Active Execution',
+            priority: 'Medium',
+            currentFocus: 'Core Deliverables'
+          }))
         ];
 
         const mergedTasks = [
@@ -294,15 +344,19 @@ export const TasksView = () => {
   }, []);
 
   const selectedMission = missions.find((m) => m.id === selectedMissionId);
-  const filteredTasks = selectedMissionId
-    ? tasks.filter((t) => t.missionId === selectedMissionId)
-    : tasks;
+  
+  // Dynamic search on task titles
+  const filteredTasks = tasks.filter((t) => {
+    const matchesMission = selectedMissionId ? t.missionId === selectedMissionId : true;
+    const matchesSearch = t.title.toLowerCase().includes(searchTerm.toLowerCase());
+    return matchesMission && matchesSearch;
+  });
 
   // Dynamic KPI counts
   const totalCount = tasks.length;
   const inProgressCount = tasks.filter(t => t.status === 'in_progress').length;
   const completedCount = tasks.filter(t => t.status === 'completed').length;
-  const overdueCount = 2; // Mock overdue tasks
+  const overdueCount = 2;
 
   const toggleTaskStatus = (taskId: string) => {
     const updated = tasks.map(t => {
@@ -315,82 +369,121 @@ export const TasksView = () => {
     setTasks(updated);
   };
 
+  // High / Med / Low splits for Donut
+  const highPriorityTasks = tasks.filter(t => t.priority === 'high' || t.priority === 'urgent').length;
+  const medPriorityTasks = tasks.filter(t => t.priority === 'medium').length;
+  const lowPriorityTasks = tasks.filter(t => t.priority === 'low').length;
+
   return (
-    <div className="p-4 md:p-6 h-[calc(100vh-80px)] flex flex-col font-body bg-[#fbfbfe] overflow-hidden space-y-6">
+    <div className="bg-[#FAFAFC] min-h-screen font-body p-8 md:p-10 space-y-8 md:space-y-10 overflow-y-auto">
       
-      {/* Header */}
-      <header className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 shrink-0 pb-1">
+      {/* HEADER SECTION */}
+      <header className="flex flex-col xl:flex-row justify-between items-start xl:items-center gap-6 pb-2">
         <div>
-          <h1 className="text-3xl font-heading font-black text-text-primary flex items-center gap-3 tracking-tight">
-            <CheckSquare className="w-8 h-8 text-primary" />
+          <h1 className="text-[44px] font-extrabold tracking-tight text-[#111827] leading-none flex items-center gap-3.5">
+            <CheckSquare className="w-10 h-10 text-[#5A5CD8]" />
             Execution Tasks
           </h1>
-          <p className="text-text-secondary text-xs font-semibold mt-1">
-            Manage missions and sub-tasks generated by AI. Stay focused and execute with precision.
+          <p className="text-[15px] font-medium text-[#6B7280] mt-3">
+            Manage your AI-generated workspaces, schedule missions, and track granular roadmap progress.
           </p>
         </div>
 
-        <div className="flex items-center gap-4 w-full sm:w-auto">
-          <div className="relative flex-1 sm:w-64 max-w-md">
-            <Search className="w-4 h-4 text-gray-400 absolute left-3 top-1/2 -translate-y-1/2" />
+        {/* SEARCH & ACTIONS */}
+        <div className="flex flex-wrap items-center gap-4 w-full xl:w-auto">
+          {/* SEARCH BAR (Redesigned) */}
+          <div className="relative flex-1 md:w-80 min-w-[240px] max-w-lg">
+            <Search className="w-5 h-5 text-[#6B7280] absolute left-4.5 top-1/2 -translate-y-1/2" />
             <input 
               type="text" 
-              placeholder="Search tasks or missions..."
-              className="w-full bg-white border border-[#0F172A]/[0.08] rounded-xl py-2 pl-9 pr-3 text-xs outline-none focus:ring-2 focus:ring-primary/20 font-semibold"
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+              placeholder="Search tasks, scopes, or topics..."
+              className="w-full bg-[#FFFFFF] border border-[#ECECEC] rounded-[20px] h-14 pl-12.5 pr-5 text-[15px] font-medium outline-none focus:ring-2 focus:ring-[#5A5CD8]/20 text-[#111827] placeholder-[#6B7280]/60 transition-all shadow-[0_4px_20px_rgba(0,0,0,0.01)]"
             />
           </div>
-          <button onClick={() => alert('Filters applied')} className="p-2 border border-gray-200 hover:bg-gray-50 bg-white rounded-xl active:scale-95 transition-all text-text-secondary">
-            <Filter className="w-4 h-4" />
+          
+          <button className="h-14 w-14 border border-[#ECECEC] hover:bg-[#FAFAFC] bg-[#FFFFFF] rounded-[20px] flex items-center justify-center active:scale-95 transition-all text-[#6B7280] shadow-[0_4px_20px_rgba(0,0,0,0.01)]">
+            <Filter className="w-5 h-5" />
           </button>
+          
           <button
             onClick={() => {
               if (selectedMissionId) {
-                const newTask: Task = {
-                  id: `t-new-${Date.now()}`,
-                  missionId: selectedMissionId,
-                  title: prompt('Enter task title:') || 'New Task',
-                  status: 'todo',
-                  priority: 'medium',
-                  userId: 'mock-user',
-                  createdAt: new Date().toISOString(),
-                  updatedAt: new Date().toISOString(),
-                };
-                setTasks(prev => [...prev, newTask]);
+                const titleInput = prompt('Enter new task description:');
+                if (titleInput) {
+                  const newTask: Task = {
+                    id: `t-new-${Date.now()}`,
+                    missionId: selectedMissionId,
+                    title: titleInput,
+                    status: 'todo',
+                    priority: 'medium',
+                    userId: 'mock-user',
+                    createdAt: new Date().toISOString(),
+                    updatedAt: new Date().toISOString(),
+                  };
+                  setTasks(prev => [...prev, newTask]);
+                }
+              } else {
+                alert('Please select a mission first!');
               }
             }}
-            className="flex items-center gap-2 bg-primary hover:bg-primary-hover text-white px-4 py-2 rounded-xl text-xs font-black transition-all shadow-md shrink-0 active:scale-95"
+            className="flex items-center gap-2 bg-[#5A5CD8] hover:bg-[#484AB5] text-[#FFFFFF] h-14 px-6 rounded-[20px] text-[15px] font-extrabold transition-all shadow-[0_8px_30px_rgba(90,92,216,0.2)] active:scale-95 shrink-0"
           >
-            <Plus className="w-4 h-4" />
-            <span>New Task</span>
+            <Plus className="w-5 h-5" />
+            <span>Create Task</span>
           </button>
         </div>
       </header>
 
+      {/* LOADING STATE */}
       {loading ? (
-        <div className="flex-1 flex items-center justify-center bg-white border border-gray-150 rounded-[2rem]">
-          <div className="w-8 h-8 border-4 border-primary border-t-transparent rounded-full animate-spin"></div>
+        <div className="min-h-[500px] flex items-center justify-center bg-[#FFFFFF] border border-[#ECECEC] rounded-[20px] shadow-[0_8px_30px_rgb(0,0,0,0.01)]">
+          <div className="flex flex-col items-center gap-3">
+            <div className="w-10 h-10 border-4 border-[#5A5CD8] border-t-transparent rounded-full animate-spin"></div>
+            <span className="text-[14px] font-bold text-[#6B7280] tracking-wider uppercase">Loading Workspace...</span>
+          </div>
         </div>
       ) : (
-        <div className="flex-1 flex flex-col gap-6 min-h-0 h-full overflow-hidden">
+        <div className="space-y-8 md:space-y-10">
           
-          {/* 1. KPI COUNTERS ROW */}
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-4 shrink-0">
+          {/* 1. EXECUTIVE KPI SECTION */}
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
             {[
-              { label: 'Total Tasks', value: totalCount, desc: 'Across all missions', color: 'text-primary bg-primary/5', icon: CheckSquare },
-              { label: 'In Progress', value: inProgressCount, desc: 'Tasks in progress', color: 'text-indigo-500 bg-indigo-50', icon: Clock },
-              { label: 'Completed', value: completedCount, desc: 'Tasks completed', color: 'text-emerald-500 bg-emerald-50', icon: CheckCircle2 },
-              { label: 'Overdue', value: overdueCount, desc: 'Need attention', color: 'text-red-500 bg-red-50', icon: AlertTriangle }
+              { label: 'Total Tasks', value: totalCount, trend: '+3 today', trendType: 'up', icon: CheckSquare, bg: 'from-[#5A5CD8]/5 to-transparent' },
+              { label: 'In Progress', value: inProgressCount, trend: 'Active now', trendType: 'neutral', icon: Clock, bg: 'from-blue-500/5 to-transparent' },
+              { label: 'Completed', value: completedCount, trend: '+2 this week', trendType: 'up', icon: CheckCircle2, bg: 'from-emerald-500/5 to-transparent' },
+              { label: 'Overdue Limit', value: overdueCount, trend: 'Needs focus', trendType: 'down', icon: AlertTriangle, bg: 'from-rose-500/5 to-transparent' }
             ].map(kpi => {
               const Icon = kpi.icon;
               return (
-                <div key={kpi.label} className="mc-card p-4 flex items-center gap-4">
-                  <div className={cn("w-10 h-10 rounded-xl flex items-center justify-center shrink-0", kpi.color)}>
-                    <Icon className="w-5 h-5" />
+                <div 
+                  key={kpi.label} 
+                  className={cn(
+                    "bg-[#FFFFFF] border border-[#ECECEC] rounded-[20px] p-8 flex items-center justify-between shadow-[0_8px_30px_rgb(0,0,0,0.015)] bg-gradient-to-br hover:shadow-[0_12px_40px_rgba(0,0,0,0.03)] transition-all duration-300", 
+                    kpi.bg
+                  )}
+                >
+                  <div className="space-y-2">
+                    <span className="text-[44px] font-extrabold font-mono text-[#111827] leading-none block">
+                      {kpi.value}
+                    </span>
+                    <span className="text-[14px] font-semibold text-[#6B7280] block">
+                      {kpi.label}
+                    </span>
+                    <span className={cn(
+                      "text-[12px] font-bold inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full",
+                      kpi.trendType === 'up' ? 'text-emerald-600 bg-emerald-50' : 
+                      kpi.trendType === 'down' ? 'text-rose-600 bg-rose-50' : 
+                      'text-blue-600 bg-blue-50'
+                    )}>
+                      {kpi.trendType === 'up' && '↑'}
+                      {kpi.trendType === 'down' && '↓'}
+                      {kpi.trend}
+                    </span>
                   </div>
-                  <div>
-                    <span className="text-2xl font-mono font-black text-text-primary leading-none block">{kpi.value}</span>
-                    <span className="text-[10px] font-bold text-text-primary block mt-1 leading-none">{kpi.label}</span>
-                    <span className="text-[8px] text-text-secondary block mt-0.5 font-semibold leading-none">{kpi.desc}</span>
+                  <div className="w-14 h-14 rounded-2xl bg-[#FFFFFF] border border-[#ECECEC] flex items-center justify-center shrink-0 shadow-sm text-[#5A5CD8]">
+                    <Icon className="w-6 h-6" />
                   </div>
                 </div>
               );
@@ -398,19 +491,20 @@ export const TasksView = () => {
           </div>
 
           {/* 2. CORE WORKSPACE GRID */}
-          <div className="flex-1 grid grid-cols-1 lg:grid-cols-12 gap-5 min-h-0 h-full overflow-hidden">
+          <div className="grid grid-cols-1 xl:grid-cols-12 gap-6 items-start">
             
-            {/* COLUMN 1: ACTIVE MISSIONS (lg:col-span-3) */}
-            <div className="lg:col-span-3 flex flex-col gap-4 h-full overflow-y-auto scrollbar-none pb-4">
-              <div className="mc-card p-5 space-y-4">
-                <div className="flex justify-between items-center border-b border-slate-100 pb-2">
-                  <h3 className="font-heading font-extrabold text-[10px] uppercase tracking-wider text-text-secondary">Active Missions</h3>
-                  <button onClick={() => alert('New mission prompt')} className="text-[10px] font-bold text-primary flex items-center gap-1 hover:underline">
-                    <Plus className="w-3 h-3" /> New
+            {/* COLUMN 1: ACTIVE MISSIONS PANEL (xl:col-span-3) */}
+            <div className="xl:col-span-3 space-y-6">
+              <div className="bg-[#FFFFFF] border border-[#ECECEC] rounded-[20px] p-8 shadow-[0_8px_30px_rgb(0,0,0,0.015)] space-y-6">
+                
+                <div className="flex justify-between items-center border-b border-[#ECECEC] pb-4">
+                  <h3 className="text-[18px] font-bold text-[#111827]">Active Missions</h3>
+                  <button onClick={() => alert('Start new mission prompt')} className="text-[14px] font-bold text-[#5A5CD8] flex items-center gap-1 hover:underline">
+                    <Plus className="w-4 h-4" /> New
                   </button>
                 </div>
 
-                <div className="space-y-3">
+                <div className="space-y-4">
                   {missions.map(m => {
                     const missionTasks = tasks.filter(t => t.missionId === m.id);
                     const completed = missionTasks.filter(t => t.status === 'completed').length;
@@ -422,114 +516,141 @@ export const TasksView = () => {
                         key={m.id}
                         onClick={() => setSelectedMissionId(m.id)}
                         className={cn(
-                          "w-full text-left p-3.5 rounded-2xl border transition-all flex flex-col justify-between items-start gap-2 relative overflow-hidden",
+                          "w-full text-left p-6 rounded-[20px] border transition-all duration-300 flex flex-col gap-4 relative overflow-hidden group hover:scale-[1.01]",
                           isSelected
-                            ? "bg-slate-50 border-primary/25 shadow-sm"
-                            : "bg-white border-slate-100 hover:bg-gray-50"
+                            ? "bg-gradient-to-br from-[#5A5CD8]/[0.02] to-transparent border-[#5A5CD8] shadow-[0_8px_30px_rgba(90,92,216,0.05)]"
+                            : "bg-[#FFFFFF] border-[#ECECEC] hover:border-[#5A5CD8]/40 shadow-sm"
                         )}
                       >
-                        {isSelected && <div className="absolute left-0 top-0 bottom-0 w-1 bg-primary" />}
-                        <div className="w-full">
-                          <h4 className="font-heading font-black text-xs text-text-primary truncate w-full">{m.title}</h4>
-                          <p className="text-[9px] text-text-secondary font-mono mt-1">Due: {m.targetDate || 'Ongoing'}</p>
+                        {isSelected && <div className="absolute left-0 top-0 bottom-0 w-[4px] bg-[#5A5CD8]" />}
+                        
+                        <div className="w-full flex justify-between items-start gap-2">
+                          <h4 className="text-[16px] font-bold text-[#111827] group-hover:text-[#5A5CD8] transition-colors leading-tight truncate">
+                            {m.title}
+                          </h4>
+                        </div>
+
+                        {/* Focus area metadata */}
+                        <div className="text-[13px] text-[#6B7280] font-medium leading-relaxed">
+                          🎯 <span className="font-bold text-[#111827]">Focus:</span> {m.currentFocus}
                         </div>
 
                         {/* Progress row */}
-                        <div className="w-full flex items-center justify-between gap-3 pt-1">
-                          <div className="flex-1 bg-slate-100 h-1 rounded-full overflow-hidden">
-                            <div className="h-full bg-primary rounded-full" style={{ width: `${pct}%` }} />
+                        <div className="w-full space-y-2">
+                          <div className="flex items-center justify-between text-[13px] font-bold">
+                            <span className="text-[#6B7280]">{pct}% Completed</span>
+                            <span className="text-[#5A5CD8]">{completed}/{missionTasks.length} Tasks</span>
                           </div>
-                          <span className="text-[9px] font-mono font-black text-primary shrink-0 leading-none">{pct}%</span>
+                          <div className="w-full bg-[#ECECEC] h-2 rounded-full overflow-hidden">
+                            <div 
+                              className="h-full bg-[#5A5CD8] rounded-full transition-all duration-700 ease-out" 
+                              style={{ width: `${pct}%` }} 
+                            />
+                          </div>
+                        </div>
+
+                        {/* Footer Chips */}
+                        <div className="w-full flex flex-wrap items-center justify-between gap-2 pt-1 border-t border-[#ECECEC]/60">
+                          <span className={cn(
+                            "text-[12px] font-bold px-2.5 py-0.5 rounded-full border",
+                            m.riskLevel === 'On Track' ? 'text-emerald-600 bg-emerald-50 border-emerald-100' : 'text-rose-600 bg-rose-50 border-rose-100'
+                          )}>
+                            {m.riskLevel}
+                          </span>
+                          <span className="text-[12px] font-medium text-[#6B7280] font-mono">
+                            ⏳ {m.daysRemaining}d left
+                          </span>
                         </div>
                       </button>
                     );
                   })}
                 </div>
 
-                <div className="border-t border-slate-50 pt-3 text-center">
-                  <button onClick={() => alert('All missions mapped.')} className="text-[10px] font-bold text-primary hover:underline">
-                    View all missions →
+                <div className="border-t border-[#ECECEC] pt-4 text-center">
+                  <button onClick={() => alert('Showing all active items')} className="text-[14px] font-bold text-[#5A5CD8] hover:underline">
+                    View all missions & milestones →
                   </button>
                 </div>
               </div>
             </div>
 
-            {/* COLUMN 2: CENTER ACTIVE MISSION DETAILS (lg:col-span-6) */}
-            <div className="lg:col-span-6 flex flex-col gap-4 h-full overflow-y-auto scrollbar-none pb-4">
+            {/* COLUMN 2: CENTER ACTIVE DETAILS & LINEAR TASKS (xl:col-span-6) */}
+            <div className="xl:col-span-6 space-y-8">
               {selectedMission ? (
-                <div className="space-y-4">
-                  
-                  {/* Active Mission detail banner */}
-                  <div className="mc-card p-5 space-y-4 relative overflow-hidden">
-                    <div className="absolute top-0 right-0 w-48 h-48 bg-primary/5 rounded-full blur-2xl pointer-events-none" />
+                <>
+                  {/* HERO MISSION DETAILS SECTION */}
+                  <div className="bg-[#FFFFFF] border border-[#ECECEC] rounded-[20px] p-8 shadow-[0_8px_30px_rgb(0,0,0,0.015)] relative overflow-hidden flex flex-col md:flex-row justify-between gap-8 items-start md:items-center">
+                    <div className="absolute top-0 right-0 w-64 h-64 bg-[#5A5CD8]/5 rounded-full blur-3xl pointer-events-none" />
                     
-                    <div className="flex items-start gap-3 justify-between">
-                      <div className="flex items-center gap-3">
-                        <div className="w-9 h-9 rounded-xl bg-primary/10 flex items-center justify-center text-primary shrink-0">
-                          <span className="font-mono text-sm font-black">&lt;/&gt;</span>
+                    <div className="space-y-5 flex-1 min-w-0 z-10">
+                      <div>
+                        <span className="text-[12px] font-bold bg-[#5A5CD8]/10 text-[#5A5CD8] px-3.5 py-1 rounded-full uppercase tracking-wider font-mono">
+                          {selectedMission.currentStage}
+                        </span>
+                        <h2 className="text-[30px] font-extrabold text-[#111827] tracking-tight leading-tight mt-3">
+                          {selectedMission.title}
+                        </h2>
+                        <p className="text-[15px] font-medium text-[#6B7280] leading-relaxed mt-2.5">
+                          {selectedMission.description}
+                        </p>
+                      </div>
+
+                      {/* Info grid */}
+                      <div className="grid grid-cols-2 sm:grid-cols-3 gap-4 pt-1">
+                        <div>
+                          <span className="text-[13px] font-bold text-[#6B7280] block">Daily Target</span>
+                          <span className="text-[15px] font-extrabold text-[#111827] mt-1 block">5 problems / day</span>
                         </div>
                         <div>
-                          <h2 className="font-heading font-black text-base text-text-primary leading-tight flex items-center gap-2">
-                            {selectedMission.title}
-                            <button onClick={() => alert('Edit title prompt')} className="text-gray-400 hover:text-text-primary transition-colors"><Edit3 className="w-3.5 h-3.5" /></button>
-                          </h2>
-                          <p className="text-[10px] font-semibold text-text-secondary mt-0.5">{selectedMission.description}</p>
+                          <span className="text-[13px] font-bold text-[#6B7280] block">Target Date</span>
+                          <span className="text-[15px] font-extrabold text-[#111827] mt-1 block">{selectedMission.targetDate || 'N/A'}</span>
                         </div>
+                        <div>
+                          <span className="text-[13px] font-bold text-[#6B7280] block">Current Stage</span>
+                          <span className="text-[15px] font-extrabold text-[#111827] mt-1 block">{selectedMission.priority} Priority</span>
+                        </div>
+                      </div>
+
+                      {/* AI recommendations */}
+                      <div className="bg-[#FAFAFC] border border-[#ECECEC] rounded-2xl p-5 space-y-2">
+                        <div className="flex items-center gap-2 text-[#5A5CD8] text-[14px] font-bold">
+                          <Sparkles className="w-4.5 h-4.5 animate-pulse" />
+                          <span>AI Recommendation & Goal</span>
+                        </div>
+                        <p className="text-[13.5px] font-semibold text-[#6B7280] leading-relaxed">
+                          "Maintain consistency. Complete the sliding window drills today to optimize your focus streak before reviewing binary search."
+                        </p>
                       </div>
                     </div>
 
-                    {/* Banner telemetry specs */}
-                    <div className="grid grid-cols-4 gap-2 text-center">
-                      <div className="bg-gray-50 border border-gray-100 rounded-xl p-2.5 flex flex-col items-center justify-center">
-                        <span className="text-[7px] text-text-secondary font-bold uppercase">Progress</span>
-                        <div className="flex items-center gap-1.5 mt-1">
-                          {(() => {
-                            const mTasks = tasks.filter(t => t.missionId === selectedMission.id);
-                            const done = mTasks.filter(t => t.status === 'completed').length;
-                            const pct = mTasks.length > 0 ? Math.round((done / mTasks.length) * 100) : 0;
-                            return <MiniRadialGauge value={pct} />;
-                          })()}
-                        </div>
-                      </div>
-                      <div className="bg-gray-50 border border-gray-100 rounded-xl p-2.5 flex flex-col items-center justify-center">
-                        <span className="text-[7px] text-text-secondary font-bold uppercase">Target</span>
-                        <span className="text-[10px] font-black text-text-primary leading-tight mt-2.5">5 problems/day</span>
-                      </div>
-                      <div className="bg-gray-50 border border-gray-100 rounded-xl p-2.5 flex flex-col items-center justify-center">
-                        <span className="text-[7px] text-text-secondary font-bold uppercase">Current Topic</span>
-                        <span className="text-[10px] font-black text-text-primary leading-tight mt-2.5 truncate w-full" title="Arrays & Strings">Arrays & Strings</span>
-                      </div>
-                      <div className="bg-gray-50 border border-gray-100 rounded-xl p-2.5 flex flex-col items-center justify-center">
-                        <span className="text-[7px] text-text-secondary font-bold uppercase">Due Date</span>
-                        <span className="text-[9px] font-black text-text-primary leading-tight mt-2.5 flex items-center gap-1">
-                          <Calendar className="w-3 h-3 text-text-secondary" />
-                          {selectedMission.targetDate || 'N/A'}
-                        </span>
-                      </div>
+                    {/* Progress Circle right side */}
+                    <div className="shrink-0 z-10 self-center">
+                      {(() => {
+                        const mTasks = tasks.filter(t => t.missionId === selectedMission.id);
+                        const done = mTasks.filter(t => t.status === 'completed').length;
+                        const pct = mTasks.length > 0 ? Math.round((done / mTasks.length) * 100) : 0;
+                        return <ProgressRing value={pct} />;
+                      })()}
                     </div>
                   </div>
 
-                  {/* Tasks List */}
-                  <div className="mc-card p-5 space-y-4">
-                    <div className="flex justify-between items-center border-b border-slate-100 pb-2">
-                      <h3 className="font-heading font-black text-xs text-text-primary uppercase tracking-wider">Mission Tasks</h3>
-                      <div className="flex items-center gap-3">
-                        <div className="flex items-center gap-1 text-[10px] font-bold text-text-secondary cursor-pointer hover:text-text-primary">
-                          <span>Sort by: Priority</span>
-                          <ChevronRight className="w-3.5 h-3.5 rotate-90" />
-                        </div>
-                        <Filter className="w-3.5 h-3.5 text-text-secondary cursor-pointer hover:text-text-primary" />
-                      </div>
+                  {/* PREMIUM LINEAR TASK LIST */}
+                  <div className="bg-[#FFFFFF] border border-[#ECECEC] rounded-[20px] p-8 shadow-[0_8px_30px_rgb(0,0,0,0.015)] space-y-6">
+                    <div className="flex justify-between items-center border-b border-[#ECECEC] pb-4">
+                      <h3 className="text-[18px] font-bold text-[#111827]">Roadmap Tasks</h3>
+                      <span className="text-[13px] font-bold text-[#6B7280] bg-[#FAFAFC] px-3 py-1 rounded-lg border border-[#ECECEC]">
+                        Showing {filteredTasks.length} Tasks
+                      </span>
                     </div>
 
-                    <div className="space-y-3">
+                    <div className="space-y-4">
                       {filteredTasks.length === 0 ? (
-                        <div className="text-center py-10 text-text-secondary text-xs italic">
-                          No tasks generated for this mission.
+                        <div className="text-center py-16 text-[#6B7280] text-[15px] font-medium bg-[#FAFAFC] border border-dashed border-[#ECECEC] rounded-2xl">
+                          No tasks match your search or filter criteria.
                         </div>
                       ) : (
                         filteredTasks.map(t => {
-                          const priorityLabel = t.priority === 'urgent' ? 'High' : t.priority === 'high' ? 'Medium' : 'Low';
+                          const { aiConfidence, difficulty, category } = getTaskEnrichments(t.title, t.id);
                           const isCompleted = t.status === 'completed';
                           const isInProgress = t.status === 'in_progress';
 
@@ -537,65 +658,79 @@ export const TasksView = () => {
                             <div 
                               key={t.id}
                               className={cn(
-                                "p-4 bg-white border rounded-2xl transition-all duration-150 flex items-start gap-3.5 relative overflow-hidden group hover:border-slate-300",
-                                isCompleted ? "border-slate-100 opacity-60" : "border-slate-150"
+                                "min-h-[88px] p-6 bg-[#FFFFFF] border rounded-[20px] transition-all duration-300 flex flex-col md:flex-row md:items-center justify-between gap-4 group hover:border-[#5A5CD8] hover:shadow-[0_8px_30px_rgba(90,92,216,0.03)] relative overflow-hidden",
+                                isCompleted ? "border-[#ECECEC] opacity-60 bg-[#FAFAFC]/40" : "border-[#ECECEC]"
                               )}
                             >
-                              {isInProgress && <div className="absolute left-0 top-0 bottom-0 w-1 bg-primary" />}
+                              {isInProgress && <div className="absolute left-0 top-0 bottom-0 w-[4px] bg-[#5A5CD8]" />}
                               
-                              <button 
-                                onClick={() => toggleTaskStatus(t.id)}
-                                className="mt-0.5 shrink-0 text-gray-300 hover:text-primary transition-colors"
-                              >
-                                {isCompleted ? (
-                                  <CheckCircle2 className="w-5 h-5 text-primary" />
-                                ) : isInProgress ? (
-                                  <PlayCircle className="w-5 h-5 text-primary animate-pulse" />
-                                ) : (
-                                  <Circle className="w-5 h-5 text-gray-300" />
-                                )}
-                              </button>
+                              <div className="flex items-start gap-4 flex-1 min-w-0">
+                                {/* Custom Checkbox */}
+                                <button 
+                                  onClick={() => toggleTaskStatus(t.id)}
+                                  className={cn(
+                                    "mt-1 w-6 h-6 rounded-lg border-2 flex items-center justify-center transition-all shrink-0 active:scale-90",
+                                    isCompleted 
+                                      ? "bg-[#5A5CD8] border-[#5A5CD8] text-white" 
+                                      : isInProgress 
+                                        ? "border-[#5A5CD8] text-[#5A5CD8]" 
+                                        : "border-[#ECECEC] hover:border-[#5A5CD8]"
+                                  )}
+                                >
+                                  {isCompleted && <Check className="w-4 h-4 stroke-[3px]" />}
+                                  {isInProgress && <span className="w-2.5 h-2.5 rounded-full bg-[#5A5CD8] animate-ping" />}
+                                </button>
 
-                              <div className="flex-1 min-w-0">
-                                <h4 className={cn("font-bold text-xs text-text-primary leading-tight", isCompleted && "line-through text-text-secondary")}>
-                                  {t.title}
-                                </h4>
-                                {t.description && (
-                                  <p className="text-[10px] text-text-secondary mt-1 font-semibold leading-relaxed">
-                                    {t.description}
-                                  </p>
-                                )}
-                                
-                                {/* Tags */}
-                                {(() => {
-                                  const tags = TASK_TAGS[t.title] || [];
-                                  if (tags.length === 0) return null;
-                                  return (
-                                    <div className="flex flex-wrap gap-1 mt-2.5">
-                                      {tags.map(tag => (
-                                        <span key={tag} className="text-[8px] font-black uppercase tracking-wider bg-slate-100 text-text-secondary px-2 py-0.5 rounded-md">
-                                          {tag}
-                                        </span>
-                                      ))}
-                                    </div>
-                                  );
-                                })()}
+                                <div className="space-y-1 flex-1 min-w-0">
+                                  <h4 className={cn("text-[16px] font-bold text-[#111827] leading-snug group-hover:text-[#5A5CD8] transition-colors truncate", isCompleted && "line-through text-[#6B7280]")}>
+                                    {t.title}
+                                  </h4>
+                                  {t.description && (
+                                    <p className="text-[14px] font-medium text-[#6B7280] leading-relaxed max-w-xl">
+                                      {t.description}
+                                    </p>
+                                  )}
+                                  
+                                  {/* Badges / Meta tags row */}
+                                  <div className="flex flex-wrap items-center gap-2 pt-1 text-[12px] font-bold">
+                                    <span className="bg-[#FAFAFC] border border-[#ECECEC] text-[#6B7280] px-2.5 py-0.5 rounded-lg">
+                                      {category}
+                                    </span>
+                                    <span className="text-[#5A5CD8] bg-[#5A5CD8]/10 px-2 py-0.5 rounded-lg font-mono">
+                                      🧠 {aiConfidence}% Match
+                                    </span>
+                                    <span className={cn(
+                                      "px-2 py-0.5 rounded-lg border font-mono",
+                                      difficulty === 'Easy' ? 'text-emerald-600 bg-emerald-50 border-emerald-100' :
+                                      difficulty === 'Hard' ? 'text-rose-600 bg-rose-50 border-rose-100' :
+                                      'text-amber-600 bg-amber-50 border-amber-100'
+                                    )}>
+                                      {difficulty}
+                                    </span>
+                                  </div>
+                                </div>
                               </div>
 
-                              {/* Priority & duration chips */}
-                              <div className="flex items-center gap-2.5 shrink-0">
+                              {/* Right side metadata */}
+                              <div className="flex items-center justify-between md:justify-end gap-3.5 border-t border-[#ECECEC] pt-3 md:pt-0 md:border-t-0 shrink-0">
                                 <span className={cn(
-                                  "text-[8px] font-black uppercase border px-2 py-0.5 rounded-md self-center",
-                                  t.priority === 'urgent' ? 'text-red-500 bg-red-50 border-red-200/50' : t.priority === 'high' ? 'text-orange-500 bg-orange-50 border-orange-200/50' : 'text-green-600 bg-green-50 border-green-200/50'
+                                  "text-[12px] font-bold uppercase tracking-wider px-3 py-1 rounded-full border",
+                                  t.priority === 'urgent' ? 'text-rose-500 bg-rose-50 border-rose-200/50' : 
+                                  t.priority === 'high' ? 'text-orange-500 bg-orange-50 border-orange-200/50' : 
+                                  t.priority === 'medium' ? 'text-blue-500 bg-blue-50 border-blue-200/50' :
+                                  'text-green-600 bg-green-50 border-green-200/50'
                                 )}>
-                                  {priorityLabel}
+                                  {t.priority}
                                 </span>
+                                
                                 {t.estimatedDuration && (
-                                  <span className="text-[9px] font-bold font-mono bg-slate-50 border border-slate-200/50 text-text-secondary px-2 py-0.5 rounded-md self-center">
+                                  <span className="text-[13px] font-extrabold font-mono text-[#6B7280] flex items-center gap-1">
+                                    <Clock className="w-4 h-4 text-[#6B7280]" />
                                     {t.estimatedDuration}m
                                   </span>
                                 )}
-                                <button className="text-gray-300 hover:text-text-primary p-0.5 transition-colors self-center"><MoreVertical className="w-4 h-4" /></button>
+
+                                <button className="text-[#6B7280] hover:text-[#111827] p-1.5 hover:bg-[#FAFAFC] rounded-lg transition-all"><MoreVertical className="w-4 h-4" /></button>
                               </div>
                             </div>
                           );
@@ -605,12 +740,12 @@ export const TasksView = () => {
 
                     <button 
                       onClick={() => {
-                        const title = prompt('Enter new task title:');
-                        if (title) {
+                        const titleInput = prompt('Enter new task description:');
+                        if (titleInput) {
                           setTasks(prev => [...prev, {
                             id: `t-new-${Date.now()}`,
                             missionId: selectedMission.id,
-                            title,
+                            title: titleInput,
                             status: 'todo',
                             priority: 'medium',
                             userId: 'mock-user',
@@ -619,102 +754,140 @@ export const TasksView = () => {
                           }]);
                         }
                       }} 
-                      className="w-full border border-dashed border-gray-300 text-text-secondary py-3 rounded-2xl font-bold text-xs hover:border-primary hover:text-primary transition-all flex items-center justify-center gap-1.5"
+                      className="w-full border-2 border-dashed border-[#ECECEC] text-[#6B7280] py-5 rounded-[20px] font-bold text-[15px] hover:border-[#5A5CD8] hover:text-[#5A5CD8] hover:bg-[#5A5CD8]/5 transition-all flex items-center justify-center gap-1.5 shadow-sm"
                     >
-                      <Plus className="w-4 h-4" /> Add new task
+                      <Plus className="w-5 h-5" /> Add Task Blueprint
                     </button>
                   </div>
-                  
-                </div>
+                </>
               ) : (
-                <div className="flex-1 flex flex-col items-center justify-center text-text-secondary text-sm py-12 bg-white border rounded-3xl">
-                  <Target className="w-12 h-12 text-gray-300 mb-2 animate-bounce" />
-                  <span>Select a mission to view roadmap details.</span>
+                <div className="flex-1 flex flex-col items-center justify-center text-[#6B7280] py-20 bg-[#FFFFFF] border border-[#ECECEC] rounded-[20px] shadow-[0_8px_30px_rgb(0,0,0,0.015)] space-y-4">
+                  <Target className="w-16 h-16 text-[#ECECEC] animate-pulse" />
+                  <span className="text-[16px] font-bold">Select a mission to begin roadmapping</span>
                 </div>
               )}
             </div>
 
-            {/* COLUMN 3: RIGHT PANEL INSIGHTS (lg:col-span-3) */}
-            <div className="lg:col-span-3 flex flex-col gap-4 h-full overflow-y-auto scrollbar-none pb-4">
+            {/* COLUMN 3: RIGHT PANEL INSIGHTS (xl:col-span-3) */}
+            <div className="xl:col-span-3 space-y-8">
               
-              {/* 1. TODAY'S FOCUS */}
-              <div className="mc-card p-5 space-y-4">
-                <div className="flex justify-between items-center border-b border-slate-100 pb-2">
+              {/* 1. TODAY'S FOCUS & TIMER */}
+              <div className="bg-[#FFFFFF] border border-[#ECECEC] rounded-[20px] p-8 shadow-[0_8px_30px_rgb(0,0,0,0.015)] space-y-6">
+                <div className="flex justify-between items-center border-b border-[#ECECEC] pb-4">
                   <div>
-                    <h3 className="font-heading font-black text-xs text-text-primary uppercase tracking-wider leading-none">Today's Focus</h3>
-                    <span className="text-[9px] text-text-secondary font-mono mt-1.5 block">Stay consistent!</span>
+                    <h3 className="text-[16px] font-bold text-[#111827]">Today's Focus</h3>
+                    <span className="text-[13px] text-[#6B7280] font-medium mt-1 block">Deep work accelerator</span>
                   </div>
-                  {/* Score circle */}
-                  <div className="w-9 h-9 rounded-full bg-indigo-50 border border-primary/20 flex items-center justify-center text-[10px] font-mono font-black text-primary shadow-sm" title="2/3 completed">
-                    2/3
+                  {/* Score pill */}
+                  <span className="bg-[#5A5CD8]/10 text-[#5A5CD8] text-[13px] font-mono font-bold px-3 py-1 rounded-full border border-[#5A5CD8]/20">
+                    2 / 3 Done
+                  </span>
+                </div>
+
+                {/* Focus Timer */}
+                <div className="bg-[#FAFAFC] border border-[#ECECEC] rounded-2xl p-6 flex flex-col items-center justify-center space-y-4 text-center">
+                  <span className="text-[12px] font-bold uppercase tracking-wider text-[#6B7280]">Focus Timer</span>
+                  <div className="text-[44px] font-extrabold font-mono text-[#111827] leading-none tracking-tight">
+                    {formatTime(timeLeft)}
+                  </div>
+                  
+                  <div className="flex items-center gap-3">
+                    <button 
+                      onClick={toggleTimer} 
+                      className="w-10 h-10 rounded-xl bg-[#5A5CD8] hover:bg-[#484AB5] text-white flex items-center justify-center shadow-md active:scale-90 transition-all"
+                    >
+                      {timerRunning ? <Pause className="w-4 h-4" /> : <Play className="w-4 h-4 fill-white translate-x-0.5" />}
+                    </button>
+                    <button 
+                      onClick={resetTimer} 
+                      className="w-10 h-10 rounded-xl bg-white border border-[#ECECEC] text-[#6B7280] hover:text-[#111827] flex items-center justify-center active:scale-90 transition-all"
+                    >
+                      <RefreshCw className="w-4 h-4" />
+                    </button>
                   </div>
                 </div>
 
-                <div className="space-y-2">
+                <div className="space-y-3">
                   {[
                     { title: 'Review Strivers Arrays', dur: '90m', checked: true },
                     { title: 'Complete Sorting Algorithms', dur: '60m', checked: true },
                     { title: 'Solve 15 Sliding Window', dur: '120m', checked: false }
                   ].map((item, idx) => (
-                    <div key={idx} className="flex items-center justify-between p-3 bg-gray-50/50 border border-slate-100 hover:border-primary/20 rounded-2xl transition-all">
-                      <div className="flex items-center gap-2 min-w-0">
-                        <div className="w-4 h-4 rounded-full flex items-center justify-center shrink-0 bg-white border border-slate-200">
-                          {item.checked && <Check className="w-3 h-3 text-primary stroke-[3px]" />}
+                    <div key={idx} className="flex items-center justify-between p-4 bg-[#FAFAFC]/60 border border-[#ECECEC] hover:border-[#5A5CD8]/30 rounded-xl transition-all">
+                      <div className="flex items-center gap-3 min-w-0">
+                        <div className={cn(
+                          "w-5 h-5 rounded-md flex items-center justify-center shrink-0 border transition-all",
+                          item.checked ? "bg-[#5A5CD8] border-[#5A5CD8] text-white" : "bg-white border-[#ECECEC]"
+                        )}>
+                          {item.checked && <Check className="w-3.5 h-3.5 stroke-[3px]" />}
                         </div>
-                        <span className={cn("text-xs font-semibold truncate", item.checked ? "text-text-secondary line-through" : "text-text-primary")}>{item.title}</span>
+                        <span className={cn("text-[14px] font-bold truncate", item.checked ? "text-[#6B7280] line-through font-medium" : "text-[#111827]")}>{item.title}</span>
                       </div>
-                      <span className="shrink-0 text-[8.5px] font-mono font-bold text-text-secondary">{item.dur}</span>
+                      <span className="shrink-0 text-[13px] font-bold font-mono text-[#6B7280]">{item.dur}</span>
                     </div>
                   ))}
                 </div>
               </div>
 
-              {/* 2. TASK OVERVIEW */}
-              <div className="mc-card p-5 space-y-4">
-                <h3 className="font-heading font-black text-xs text-text-primary uppercase tracking-wider border-b border-slate-100 pb-2">Task Overview</h3>
+              {/* 2. TASK OVERVIEW DONUT */}
+              <div className="bg-[#FFFFFF] border border-[#ECECEC] rounded-[20px] p-8 shadow-[0_8px_30px_rgb(0,0,0,0.015)] space-y-6">
+                <h3 className="text-[16px] font-bold text-[#111827] border-b border-[#ECECEC] pb-4">Task Overview</h3>
                 
-                <TaskDonutChart />
+                <TaskDonutChart total={totalCount} high={highPriorityTasks} med={medPriorityTasks} low={lowPriorityTasks} />
 
-                <div className="grid grid-cols-2 gap-2 text-[9px] font-mono font-bold mt-2">
-                  <div className="flex items-center gap-1.5">
-                    <span className="w-2.5 h-2.5 rounded-full bg-[#EF4444] shrink-0" />
-                    <span className="text-text-primary">High Priority: 4</span>
+                <div className="space-y-3 pt-2 text-[14px] font-medium text-[#6B7280]">
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-2">
+                      <span className="w-3 h-3 rounded-full bg-[#EF4444] shrink-0" />
+                      <span>High / Urgent</span>
+                    </div>
+                    <span className="font-bold text-[#111827]">{highPriorityTasks}</span>
                   </div>
-                  <div className="flex items-center gap-1.5">
-                    <span className="w-2.5 h-2.5 rounded-full bg-[#F59E0B] shrink-0" />
-                    <span className="text-text-primary">Medium Priority: 5</span>
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-2">
+                      <span className="w-3 h-3 rounded-full bg-[#F59E0B] shrink-0" />
+                      <span>Medium Priority</span>
+                    </div>
+                    <span className="font-bold text-[#111827]">{medPriorityTasks}</span>
                   </div>
-                  <div className="flex items-center gap-1.5">
-                    <span className="w-2.5 h-2.5 rounded-full bg-[#10B981] shrink-0" />
-                    <span className="text-text-primary">Low Priority: 3</span>
-                  </div>
-                  <div className="flex items-center gap-1.5">
-                    <span className="w-2.5 h-2.5 rounded-full bg-[#6366f1] shrink-0" />
-                    <span className="text-text-primary">Completed: 3</span>
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-2">
+                      <span className="w-3 h-3 rounded-full bg-[#10B981] shrink-0" />
+                      <span>Low Priority</span>
+                    </div>
+                    <span className="font-bold text-[#111827]">{lowPriorityTasks}</span>
                   </div>
                 </div>
               </div>
 
-              {/* 3. AI INSIGHT */}
-              <div className="mc-card p-5">
-                <div className="flex items-center gap-2 border-b border-slate-100 pb-2">
-                  <Sparkles className="w-4 h-4 text-primary animate-pulse" />
-                  <h3 className="font-heading font-black text-xs text-text-primary uppercase tracking-wider">AI Insight</h3>
+              {/* 3. PRODUCTIVITY INSIGHTS */}
+              <div className="bg-[#FFFFFF] border border-[#ECECEC] rounded-[20px] p-8 shadow-[0_8px_30px_rgb(0,0,0,0.015)] space-y-5">
+                <div className="flex items-center gap-2 border-b border-[#ECECEC] pb-4">
+                  <Sparkles className="w-5 h-5 text-[#5A5CD8] animate-pulse" />
+                  <h3 className="text-[16px] font-bold text-[#111827]">AI Productivity Insights</h3>
                 </div>
                 
-                <p className="text-[11px] font-semibold text-text-secondary mt-3 leading-relaxed">
-                  You're most productive between <strong className="text-text-primary font-bold">9 AM - 12 PM</strong>.
-                </p>
+                <div className="space-y-4">
+                  <div className="flex justify-between items-center bg-[#FAFAFC] p-4 rounded-xl border border-[#ECECEC]">
+                    <div>
+                      <span className="text-[13px] font-bold text-[#6B7280] block">Deep Work Time</span>
+                      <span className="text-[18px] font-extrabold text-[#111827] mt-0.5 block">3.5 hrs / day</span>
+                    </div>
+                    <Zap className="w-6 h-6 text-amber-500 fill-amber-100" />
+                  </div>
 
-                <WaveChart />
+                  <p className="text-[14px] font-medium text-[#6B7280] leading-relaxed">
+                    🚀 Your cognitive energy peaks between <strong className="text-[#111827]">9 AM - 12 PM</strong>. Focus on complex algorithms then to maximize efficiency.
+                  </p>
 
-                <button 
-                  onClick={() => alert('KAIRO Schedule Optimization Triggered')}
-                  className="w-full bg-[#5A5CD8] hover:bg-[#484AB5] text-white py-2.5 rounded-xl font-bold text-xs mt-4 transition-all shadow-md active:scale-95 flex items-center justify-center gap-1.5"
-                >
-                  <Sparkles className="w-3.5 h-3.5" />
-                  Optimize My Schedule
-                </button>
+                  <button 
+                    onClick={() => alert('Productivity metrics analyzed.')}
+                    className="w-full bg-[#5A5CD8] hover:bg-[#484AB5] text-[#FFFFFF] py-3.5 rounded-xl font-bold text-[14px] transition-all shadow-md active:scale-95 flex items-center justify-center gap-1.5"
+                  >
+                    <BarChart2 className="w-4 h-4" />
+                    <span>Optimize Workspace Schedule</span>
+                  </button>
+                </div>
               </div>
 
             </div>
