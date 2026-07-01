@@ -58,7 +58,6 @@
 
 /* Reset default FullCalendar event elements style */
 .fc-v-event, .fc-h-event {
-  background-color: transparent !important;
   border: none !important;
   box-shadow: none !important;
   padding: 0 !important;
