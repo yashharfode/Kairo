@@ -65,10 +65,10 @@ function useForceSimulation(
       const alpha = 0.1; 
       const nextPos = { ...positionsRef.current };
       
-      const kRepel = 3000; 
-      const kSpring = 0.06; 
-      const lSpring = 140; 
-      const kGravity = 0.008; 
+      const kRepel = 7000; 
+      const kSpring = 0.04; 
+      const lSpring = 180; 
+      const kGravity = 0.005; 
 
       for (let i = 0; i < nodes.length; i++) {
         for (let j = i + 1; j < nodes.length; j++) {
@@ -506,11 +506,10 @@ export const KnowledgeView = () => {
                         <line
                           x1={src.x} y1={src.y}
                           x2={tgt.x} y2={tgt.y}
-                          stroke={isHighlighted ? "#94a3b8" : "#e2e8f0"} 
-                          strokeWidth={isHighlighted ? 2 : 1.5}
-                          strokeDasharray={isHighlighted ? "none" : "4 4"}
+                          stroke={isHighlighted ? color : "#CBD5E1"} 
+                          strokeWidth={isHighlighted ? 2.5 : 1.5}
                           className="transition-all duration-300"
-                          opacity={isFading ? 0.1 : 1}
+                          opacity={isFading ? 0.08 : 1}
                         />
                         {e.relation && !isFading && (
                           <text
@@ -519,7 +518,7 @@ export const KnowledgeView = () => {
                             textAnchor="middle"
                             fontSize="9"
                             fill="#94A3B8"
-                            className="select-none pointer-events-none font-medium"
+                            className="select-none pointer-events-none font-semibold"
                           >
                             {e.relation}
                           </text>
@@ -536,11 +535,17 @@ export const KnowledgeView = () => {
                     const isSelected = selectedNodeId === n.id;
                     const isNeighbor = neighbors.has(n.id);
                     const isFading = selectedNodeId && !isNeighbor;
+
+                    const labelText = n.label.length > 22 ? n.label.slice(0, 20) + '…' : n.label;
+                    const rectW = Math.max(65, labelText.length * 7 + 12);
+                    const rectH = 18;
+                    const rectX = pos.x - rectW / 2;
+                    const rectY = pos.y + (isSelected ? 24 : 18);
                     
                     return (
                       <g
                         key={n.id}
-                        className="cursor-pointer"
+                        className="cursor-pointer font-sans"
                         onMouseDown={(e) => {
                           handleGraphNodeClick(n.id);
                           onDragStart(n.id, e);
@@ -551,29 +556,43 @@ export const KnowledgeView = () => {
                           onDragStart(n.id, e);
                           e.stopPropagation();
                         }}
-                        opacity={isFading ? 0.2 : 1}
+                        opacity={isFading ? 0.15 : 1}
                         style={{ transition: 'opacity 0.3s' }}
                       >
                         {isSelected && (
-                          <circle cx={pos.x} cy={pos.y} r={32} fill={color} fillOpacity="0.1" className="animate-pulse" />
+                          <circle cx={pos.x} cy={pos.y} r={36} fill={color} fillOpacity="0.1" className="animate-pulse" />
                         )}
                         <circle
-                          cx={pos.x} cy={pos.y} r={isSelected ? 16 : 10}
+                          cx={pos.x} cy={pos.y} r={isSelected ? 20 : 13}
                           fill={color}
                           stroke={isSelected ? '#0f172a' : 'white'}
                           strokeWidth={isSelected ? 3 : 2}
                           className="transition-all duration-300"
                           style={{ filter: isSelected ? `drop-shadow(0 0 12px ${color}80)` : 'none' }}
                         />
+                        {/* Text pill capsule background */}
+                        <rect
+                          x={rectX}
+                          y={rectY - 9}
+                          width={rectW}
+                          height={rectH}
+                          rx={9}
+                          fill="white"
+                          fillOpacity={0.94}
+                          stroke={isSelected ? color : "rgba(15, 23, 42, 0.08)"}
+                          strokeWidth={isSelected ? 1.5 : 1}
+                          className="transition-all duration-300 shadow-sm"
+                        />
                         <text
-                          x={pos.x} y={pos.y + (isSelected ? 28 : 20)}
+                          x={pos.x}
+                          y={pos.y + (isSelected ? 28 : 22)}
                           textAnchor="middle"
-                          fontSize={isSelected ? "13" : "11"}
+                          fontSize={isSelected ? "11" : "9.5"}
                           fontWeight={isSelected ? '800' : '600'}
                           fill={isSelected ? '#0f172a' : '#475569'}
-                          className="select-none pointer-events-none drop-shadow-sm transition-all duration-300"
+                          className="select-none pointer-events-none transition-all duration-300"
                         >
-                          {n.label.length > 25 ? n.label.slice(0, 23) + '…' : n.label}
+                          {labelText}
                         </text>
                       </g>
                     );
