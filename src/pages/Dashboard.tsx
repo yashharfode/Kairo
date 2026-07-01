@@ -1,18 +1,12 @@
 import { useEffect, useState } from 'react';
 import { missionService } from '@/services/MissionService';
-import { memoryService } from '@/services/MemoryService';
-import { workspaceService } from '@/services/WorkspaceService';
-import type { Workspace } from '@/services/WorkspaceService';
 import { useAuth } from '@/context/AuthContext';
-import type { Mission, Task, Memory } from '@/types/schema';
+import type { Mission, Task } from '@/types/schema';
 import { 
-  Brain, 
   ArrowRight, 
   CheckCircle2, 
   Sparkles, 
-  Clock, 
-  CornerDownRight,
-  Briefcase
+  Clock
 } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import MissionControlCard from '@/components/MissionControlCard';
@@ -21,24 +15,17 @@ export const Dashboard = () => {
   const { user } = useAuth();
   const [missions, setMissions] = useState<Mission[]>([]);
   const [tasks, setTasks] = useState<Task[]>([]);
-  const [memories, setMemories] = useState<Memory[]>([]);
-  const [workspaces, setWorkspaces] = useState<Workspace[]>([]);
   const [loading, setLoading] = useState(true);
-  const [actionMessage, setActionMessage] = useState<string | null>(null);
 
   useEffect(() => {
     const loadData = async () => {
       try {
-        const [m, t, mem, ws] = await Promise.all([
+        const [m, t] = await Promise.all([
           missionService.getMissions(),
           missionService.getTasks(),
-          memoryService.getMemories(),
-          workspaceService.getWorkspaces(),
         ]);
         setMissions(m);
         setTasks(t);
-        setMemories(mem);
-        setWorkspaces(ws);
       } catch (error) {
         console.error('[Dashboard] Failed to fetch data from Lemma:', error);
       } finally {
@@ -55,13 +42,6 @@ export const Dashboard = () => {
 
   return (
     <div className="p-4 md:p-8 font-body max-w-7xl mx-auto space-y-6 md:space-y-8">
-      {/* Toast Alert for One-Click actions */}
-      {actionMessage && (
-        <div className="fixed bottom-5 right-5 z-50 bg-primary text-white px-5 py-3.5 rounded-2xl shadow-xl flex items-center gap-2.5 text-sm animate-bounce font-semibold border border-primary-border/20">
-          <Sparkles className="w-4.5 h-4.5" />
-          <span>{actionMessage}</span>
-        </div>
-      )}
 
       {/* Clean Header */}
       <header className="flex flex-col md:flex-row justify-between items-start md:items-end gap-4 pb-2">
