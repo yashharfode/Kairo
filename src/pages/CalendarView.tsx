@@ -262,7 +262,7 @@ export const CalendarView = () => {
       "p-4 md:p-6 flex flex-col font-body bg-[#fbfbfe] overflow-hidden space-y-4 transition-all duration-300 animate-page-reveal",
       isFullscreen 
         ? "fixed inset-0 z-[999] w-screen h-screen" 
-        : "h-full w-full"
+        : "h-[calc(100vh-32px)] md:h-[calc(100vh-48px)] w-full"
     )}>
 
       {/* Dynamic Action Toast */}
@@ -276,9 +276,9 @@ export const CalendarView = () => {
       {/* Top Header */}
       <header className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 shrink-0 pb-1">
         <div>
-          <h1 className="text-3xl font-heading font-black text-text-primary tracking-tight">Mission Calendar</h1>
-          <p className="text-text-secondary text-sm font-semibold mt-1">
-            All tasks, deadlines, milestones & prep blocks in one intelligent view.
+          <h1 className="text-xl font-heading font-black text-text-primary tracking-tight">Mission Calendar</h1>
+          <p className="text-text-secondary text-xs font-semibold mt-0.5">
+            All tasks, deadlines, milestones &amp; prep blocks in one intelligent view.
           </p>
         </div>
 
@@ -327,37 +327,25 @@ export const CalendarView = () => {
         </div>
       </header>
 
-      {/* UPCOMING REMINDER ALERT BANNER */}
+      {/* UPCOMING REMINDER ALERT BANNER - compact, auto-hides */}
       {showReminder && (
-        <div className="bg-gradient-to-r from-orange-500 to-red-500 rounded-2xl p-4 text-white flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 shadow-lg shadow-orange-500/20 shrink-0 animate-fade-in relative overflow-hidden">
-          {/* Background pattern */}
-          <div className="absolute top-0 right-0 -mt-8 -mr-8 w-32 h-32 bg-white opacity-10 rounded-full blur-2xl"></div>
-          
-          <div className="flex items-center gap-4 relative z-10">
-            <div className="bg-white/20 p-2.5 rounded-xl">
-              <BellRing className="w-5 h-5 text-white animate-bounce" />
-            </div>
+        <div className="bg-gradient-to-r from-orange-500 to-red-500 rounded-xl px-4 py-2.5 text-white flex items-center justify-between gap-3 shadow-md shadow-orange-500/20 shrink-0 animate-fade-in relative overflow-hidden">
+          <div className="flex items-center gap-3 relative z-10">
+            <BellRing className="w-4 h-4 text-white animate-bounce shrink-0" />
             <div>
-              <p className="text-[10px] font-black uppercase tracking-widest text-white/80 mb-0.5 flex items-center gap-1.5">
-                <span className="w-1.5 h-1.5 rounded-full bg-white animate-ping" />
-                Upcoming in 15 mins
-              </p>
-              <h4 className="font-bold text-sm leading-tight">DSA Arrays Practice - Prep Block</h4>
+              <p className="text-[9px] font-black uppercase tracking-widest text-white/80 mb-0.5">Upcoming in 15 mins</p>
+              <h4 className="font-bold text-xs leading-tight">DSA Arrays Practice - Prep Block</h4>
             </div>
           </div>
-          
-          <div className="flex items-center gap-3 relative z-10 w-full sm:w-auto justify-end">
+          <div className="flex items-center gap-2 relative z-10">
             <button 
-              onClick={() => {
-                setShowReminder(false);
-                showToast("Started DSA Arrays Practice timer.");
-              }} 
-              className="bg-white text-orange-600 px-4 py-2 rounded-xl text-xs font-black shadow-sm hover:bg-orange-50 transition-all active:scale-95"
+              onClick={() => { setShowReminder(false); showToast("Started DSA Arrays Practice timer."); }} 
+              className="bg-white text-orange-600 px-3 py-1.5 rounded-lg text-[10px] font-black shadow-sm hover:bg-orange-50 transition-all active:scale-95"
             >
-              Start Session
+              Start
             </button>
-            <button onClick={() => setShowReminder(false)} className="p-2 hover:bg-white/20 rounded-xl transition-all">
-              <X className="w-4 h-4 text-white" />
+            <button onClick={() => setShowReminder(false)} className="p-1 hover:bg-white/20 rounded-lg transition-all">
+              <X className="w-3.5 h-3.5 text-white" />
             </button>
           </div>
         </div>
@@ -418,8 +406,8 @@ export const CalendarView = () => {
             </div>
           </div>
 
-          {/* FullCalendar Wrapper */}
-          <div className="flex-1 min-h-0 overflow-y-auto scrollbar-none fc-mission-control-theme">
+          {/* FullCalendar Wrapper - fills remaining height */}
+          <div className="flex-1 min-h-0 overflow-hidden fc-mission-control-theme">
             <FullCalendar
               ref={calendarRef}
               plugins={[dayGridPlugin, timeGridPlugin, interactionPlugin]}
@@ -444,6 +432,13 @@ export const CalendarView = () => {
               dayHeaderContent={(arg) => {
                 const date = arg.date;
                 const dayName = date.toLocaleDateString('en-US', { weekday: 'short' });
+                if (activeView === 'dayGridMonth') {
+                  return (
+                    <span className="text-[10px] font-extrabold text-slate-400 uppercase tracking-wider py-1.5 block">
+                      {dayName}
+                    </span>
+                  );
+                }
                 const dayNum = date.getDate();
                 const isToday = date.toDateString() === new Date().toDateString();
 
@@ -507,11 +502,11 @@ export const CalendarView = () => {
                   </div>
                 );
               }}
-              slotMinTime="06:00:00"
-              slotMaxTime="23:00:00"
+              slotMinTime="07:00:00"
+              slotMaxTime="22:00:00"
               allDaySlot={true}
               slotDuration="00:30:00"
-              dayMaxEvents={3}
+              dayMaxEvents={activeView === 'dayGridMonth' ? false : 4}
               eventDisplay="block"
             />
           </div>

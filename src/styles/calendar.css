@@ -88,9 +88,9 @@
   filter: brightness(1.03) !important;
 }
 
-/* Time axis slot height sizing */
+/* Time axis slot height sizing — small enough to fit 7AM–10PM in viewport */
 .fc .fc-timegrid-slot {
-  height: 2.8rem !important; /* Spaced perfectly to fit viewport height */
+  height: 2rem !important; /* Reduced so all slots fit without scrolling */
 }
 
 /* Today column gradient background */
@@ -114,4 +114,28 @@
 .fc-timegrid-now-indicator-arrow {
   border-color: #14b8a6 !important;
   background-color: #14b8a6 !important;
+}
+
+/* Force FC to fill its container height fully */
+.fc-mission-control-theme .fc,
+.fc-mission-control-theme .fc-view-harness {
+  height: 100% !important;
+}
+
+/* Month view: distribute rows evenly to fill all available space */
+.fc .fc-daygrid-body {
+  width: 100% !important;
+}
+.fc .fc-daygrid-body-unbalanced .fc-daygrid-day-events {
+  min-height: 0 !important;
+}
+.fc-daygrid-body table {
+  height: 100% !important;
+}
+.fc-view-harness-active {
+  height: 100% !important;
+}
+.fc-scroller-liquid-absolute {
+  position: relative !important;
+  overflow: visible !important;
 }
