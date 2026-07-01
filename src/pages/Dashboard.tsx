@@ -13,7 +13,6 @@ import {
   AlertTriangle
 } from 'lucide-react';
 import { Link } from 'react-router-dom';
-import MissionControlCard from '@/components/MissionControlCard';
 import { cn } from '@/lib/utils';
 
 // --- SIGNATURE ELEMENT: RADIAL GAUGE ---
@@ -575,14 +574,6 @@ export const Dashboard = () => {
 
           {/* RIGHT SECTION (4-Cols on Desktop) */}
           <div className="lg:col-span-4 space-y-6 md:space-y-8">
-
-            {/* MISSION CONTROL WIDGET (The Masterpiece) */}
-            <MissionControlCard
-              userName={user?.displayName?.split(' ')[0] || 'Kairo'}
-              missions={activeMissions}
-              completionRate={completionRate}
-              pendingTasks={pendingTasks}
-            />
 
             {/* RISK RADAR WIDGET (Radar Chart) */}
             <RiskRadarChart missions={activeMissions} />
