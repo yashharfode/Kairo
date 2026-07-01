@@ -312,7 +312,7 @@ export const CalendarView = () => {
       <div className="flex-1 grid grid-cols-1 lg:grid-cols-12 gap-5 min-h-0 h-full overflow-hidden">
         
         {/* COLUMN 1: OUTLOOK LEFT PANEL (lg:col-span-2) */}
-        <div className="lg:col-span-2.5 flex flex-col gap-4 h-full overflow-y-auto scrollbar-none pb-4 shrink-0">
+        <div className="lg:col-span-2 flex flex-col gap-4 h-full overflow-y-auto scrollbar-none pb-4 shrink-0">
           
           {/* Mini Month Picker */}
           <MiniDatePicker activeDate={activeDate} onChange={handleMiniDateChange} />
@@ -347,8 +347,8 @@ export const CalendarView = () => {
 
         </div>
 
-        {/* COLUMN 2: THE MAIN CALENDAR GRID (lg:col-span-6.5) */}
-        <div className="lg:col-span-6.5 flex flex-col h-full bg-white rounded-[2rem] border border-[#0F172A]/[0.08] shadow-sm p-5 min-h-0 relative">
+        {/* COLUMN 2: THE MAIN CALENDAR GRID (lg:col-span-7) */}
+        <div className="lg:col-span-7 flex flex-col h-full bg-white rounded-[2rem] border border-[#0F172A]/[0.08] shadow-sm p-5 min-h-0 relative">
           
           {/* Calendar Navigation header */}
           <div className="flex items-center justify-between gap-4 border-b border-gray-100 pb-4 mb-4">
