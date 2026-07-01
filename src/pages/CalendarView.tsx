@@ -237,6 +237,8 @@ export const CalendarView = () => {
     updateTitle();
   };
 
+  const isMobile = typeof window !== 'undefined' ? window.innerWidth < 768 : false;
+
   const handleMiniDateChange = (date: Date) => {
     setActiveDate(date);
     calendarRef.current?.getApi().gotoDate(date);
@@ -365,7 +367,7 @@ export const CalendarView = () => {
       <div className="flex-1 grid grid-cols-1 lg:grid-cols-12 gap-5 min-h-0 h-full overflow-hidden">
         
         {/* COLUMN 1: OUTLOOK LEFT PANEL (lg:col-span-2) */}
-        <div className="lg:col-span-2 flex flex-col gap-4 h-full overflow-y-auto scrollbar-none pb-4 shrink-0">
+        <div className="lg:col-span-2 hidden lg:flex flex-col gap-4 h-full overflow-y-auto scrollbar-none pb-4 shrink-0">
           
           {/* Mini Month Picker */}
           <MiniDatePicker activeDate={activeDate} onChange={handleMiniDateChange} />
@@ -401,7 +403,7 @@ export const CalendarView = () => {
         </div>
 
         {/* COLUMN 2: THE MAIN CALENDAR GRID (lg:col-span-7) */}
-        <div className="lg:col-span-7 flex flex-col h-full bg-white rounded-[2rem] border border-[#0F172A]/[0.08] shadow-sm p-5 min-h-0 relative">
+        <div className="lg:col-span-7 flex flex-col h-full bg-white rounded-[2rem] border border-[#0F172A]/[0.08] shadow-sm p-4 md:p-5 min-h-0 relative">
           
           {/* Calendar Navigation header */}
           <div className="flex items-center justify-between gap-4 border-b border-gray-100 pb-4 mb-4">
@@ -421,7 +423,7 @@ export const CalendarView = () => {
             <FullCalendar
               ref={calendarRef}
               plugins={[dayGridPlugin, timeGridPlugin, interactionPlugin]}
-              initialView="timeGridWeek"
+              initialView={isMobile ? 'timeGridDay' : 'timeGridWeek'}
               headerToolbar={false} 
               height="100%"
               expandRows={true}
@@ -517,7 +519,7 @@ export const CalendarView = () => {
         </div>
 
         {/* COLUMN 3: RIGHT PANEL HUD DETAILS (lg:col-span-3) */}
-        <div className="lg:col-span-3 flex flex-col gap-4 h-full overflow-y-auto scrollbar-none pb-6 pr-1">
+        <div className="lg:col-span-3 hidden lg:flex flex-col gap-4 h-full overflow-y-auto scrollbar-none pb-6 pr-1">
           
           {/* 1. TODAY'S FOCUS */}
           <div className="mc-card p-5 space-y-4">

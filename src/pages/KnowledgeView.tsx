@@ -232,6 +232,7 @@ export const KnowledgeView = () => {
   const [noteTitle, setNoteTitle] = useState('');
   const [noteContent, setNoteContent] = useState('');
   const [isSaving, setIsSaving] = useState(false);
+  const [zoomScale, setZoomScale] = useState(1.1);
 
   const SVG_W = 1200;
   const SVG_H = 900;
@@ -327,7 +328,7 @@ export const KnowledgeView = () => {
     <div className="h-full flex bg-[#fbfbfe] font-body overflow-hidden animate-page-reveal">
       
       {/* ── LEFT SIDEBAR (Vault) ── */}
-      <aside className="w-[280px] bg-white border-r border-gray-150 flex flex-col shadow-[4px_0_24px_rgba(0,0,0,0.02)] shrink-0 z-20">
+      <aside className="w-[280px] bg-white border-r border-gray-150 hidden md:flex flex-col shadow-[4px_0_24px_rgba(0,0,0,0.02)] shrink-0 z-20">
         <div className="p-5 border-b border-gray-100 space-y-4">
           <div className="flex items-center justify-between">
             <h2 className="font-heading font-black text-xl text-text-primary flex items-center gap-2.5">
@@ -470,6 +471,34 @@ export const KnowledgeView = () => {
             <>
               {/* GRAPH VIEW */}
               <div className={cn("absolute inset-0 transition-opacity duration-500", viewMode === 'graph' ? 'opacity-100 z-10' : 'opacity-0 z-0 pointer-events-none')}>
+                
+                {/* Floating Zoom Controls */}
+                <div className="absolute bottom-5 right-5 flex items-center gap-2 bg-white/90 backdrop-blur-md border border-gray-150 p-2 rounded-2xl shadow-lg z-30 pointer-events-auto">
+                  <button 
+                    onClick={() => setZoomScale(prev => Math.min(2.5, prev + 0.15))}
+                    className="w-9 h-9 rounded-xl border border-gray-200 hover:bg-gray-50 flex items-center justify-center font-bold text-lg active:scale-95 transition-all text-[#5A5CD8]"
+                    title="Zoom In"
+                  >
+                    +
+                  </button>
+                  <span className="text-xs font-mono font-black w-12 text-center text-text-primary">
+                    {Math.round(zoomScale * 100)}%
+                  </span>
+                  <button 
+                    onClick={() => setZoomScale(prev => Math.max(0.4, prev - 0.15))}
+                    className="w-9 h-9 rounded-xl border border-gray-200 hover:bg-gray-50 flex items-center justify-center font-bold text-lg active:scale-95 transition-all text-[#5A5CD8]"
+                    title="Zoom Out"
+                  >
+                    -
+                  </button>
+                  <button 
+                    onClick={() => setZoomScale(1.1)}
+                    className="px-2.5 h-9 rounded-xl border border-gray-200 hover:bg-gray-50 flex items-center justify-center font-bold text-[10px] uppercase tracking-wider active:scale-95 transition-all text-[#5A5CD8]"
+                    title="Reset Zoom"
+                  >
+                    Reset
+                  </button>
+                </div>
                 <svg 
                   id="kairo-graph-svg" 
                   className="w-full h-full cursor-grab active:cursor-grabbing" 
@@ -492,6 +521,14 @@ export const KnowledgeView = () => {
                   </defs>
                   <rect width={SVG_W} height={SVG_H} fill="url(#bg-grad)" />
                   <rect width={SVG_W} height={SVG_H} fill="url(#grid)" />
+ 
+                  <g 
+                    style={{ 
+                      transform: `scale(${zoomScale})`, 
+                      transformOrigin: `${SVG_W / 2}px ${SVG_H / 2}px`, 
+                      transition: 'transform 0.2s cubic-bezier(0.16, 1, 0.3, 1)' 
+                    }}
+                  >
 
                   {edges.map(e => {
                     const src = positions[e.source_id];
@@ -599,6 +636,7 @@ export const KnowledgeView = () => {
                       </g>
                     );
                   })}
+                  </g>
                 </svg>
 
                 {selectedNode && (
