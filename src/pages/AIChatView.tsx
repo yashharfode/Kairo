@@ -50,14 +50,25 @@ export const AIChatView = () => {
       let parsedOptions: string[] = [];
       
       try {
-        const jsonMatch = rawReply.match(/\{[\s\S]*\}/);
-        const jsonStr = jsonMatch ? jsonMatch[0] : rawReply;
-        const parsed = JSON.parse(jsonStr);
+        const startIndex = rawReply.indexOf('{');
+        const endIndex = rawReply.lastIndexOf('}');
         
-        if (parsed.reply) parsedContent = parsed.reply;
-        if (Array.isArray(parsed.options)) parsedOptions = parsed.options;
+        if (startIndex !== -1 && endIndex !== -1 && endIndex > startIndex) {
+          const jsonStr = rawReply.substring(startIndex, endIndex + 1);
+          // Try to clean potential unescaped newlines in the string
+          const cleanJsonStr = jsonStr.replace(/\n/g, '\\n').replace(/\r/g, '');
+          const parsed = JSON.parse(cleanJsonStr);
+          
+          if (parsed.reply) parsedContent = parsed.reply;
+          if (Array.isArray(parsed.options)) parsedOptions = parsed.options;
+        }
       } catch (parseError) {
-        console.warn('Failed to parse AI response as JSON, falling back to raw text:', rawReply);
+        console.warn('Failed to parse AI response as JSON, falling back to regex extraction:', rawReply);
+        // Fallback: if JSON parse fails (e.g. due to unescaped quotes), try to regex extract the reply
+        const replyMatch = rawReply.match(/"reply"\s*:\s*"([\s\S]*?)"(?=\s*,\s*"options"|\s*\})/);
+        if (replyMatch && replyMatch[1]) {
+          parsedContent = replyMatch[1].replace(/\\n/g, '\n').replace(/\\"/g, '"');
+        }
       }
 
       setMessages(prev => [
