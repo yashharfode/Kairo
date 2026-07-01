@@ -1,5 +1,5 @@
 import React, { useEffect, useState, useRef, useMemo, useCallback } from 'react';
-import { BookOpen, Loader2, Network, FileText, Search, Tag, Link as LinkIcon, FolderTree, ArrowRight, MousePointerClick, ChevronRight } from 'lucide-react';
+import { BookOpen, Loader2, Network, FileText, Search, Tag, Link as LinkIcon, FolderTree, ArrowRight, MousePointerClick, ChevronRight, Plus, Save, X } from 'lucide-react';
 import { lemmaService } from '@/services/LemmaService';
 import { cn } from '@/lib/utils';
 
@@ -225,29 +225,53 @@ export const KnowledgeView = () => {
   const [loading, setLoading] = useState(true);
   
   const [selectedNodeId, setSelectedNodeId] = useState<string | null>(null);
-  const [viewMode, setViewMode] = useState<'graph' | 'note'>('graph');
+  const [viewMode, setViewMode] = useState<'graph' | 'note' | 'create'>('graph');
   const [search, setSearch] = useState('');
+  
+  // Notepad state
+  const [noteTitle, setNoteTitle] = useState('');
+  const [noteContent, setNoteContent] = useState('');
+  const [isSaving, setIsSaving] = useState(false);
 
   const SVG_W = 1200;
   const SVG_H = 900;
   
   const { positions, onDragStart } = useForceSimulation(nodes, edges, SVG_W, SVG_H);
 
+  const load = async () => {
+    try {
+      const rawNodes = await lemmaService.getKnowledgeNodes();
+      const rawEdges = await lemmaService.getKnowledgeEdges();
+      setNodes(rawNodes);
+      setEdges(rawEdges);
+    } catch (err) {
+      console.error('[KnowledgeView] Failed to load graph:', err);
+    } finally {
+      setLoading(false);
+    }
+  };
+
   useEffect(() => {
-    const load = async () => {
-      try {
-        const rawNodes = await lemmaService.getKnowledgeNodes();
-        const rawEdges = await lemmaService.getKnowledgeEdges();
-        setNodes(rawNodes);
-        setEdges(rawEdges);
-      } catch (err) {
-        console.error('[KnowledgeView] Failed to load graph:', err);
-      } finally {
-        setLoading(false);
-      }
-    };
     load();
   }, []);
+
+  const handleSaveNote = async () => {
+    if (!noteTitle.trim() && !noteContent.trim()) return;
+    setIsSaving(true);
+    try {
+      const fullContent = `${noteTitle.trim()}\n\n${noteContent.trim()}`;
+      await lemmaService.saveMemory(fullContent, ['note', 'manual']);
+      setNoteTitle('');
+      setNoteContent('');
+      setViewMode('graph');
+      // Reload graph to see if backend extracted it quickly (it might take time via pipeline)
+      load(); 
+    } catch (e) {
+      console.error('Failed to save note', e);
+    } finally {
+      setIsSaving(false);
+    }
+  };
 
   const nodeById = useMemo(() => Object.fromEntries(nodes.map(n => [n.id, n])), [nodes]);
   const edgesByNode = useMemo(() => {
@@ -261,11 +285,9 @@ export const KnowledgeView = () => {
     return map;
   }, [edges]);
 
-  // Derived state
   const selectedNode = selectedNodeId ? nodeById[selectedNodeId] : null;
   const backlinks = selectedNode ? (edgesByNode[selectedNode.id] || []) : [];
 
-  // Determine neighborhood for visual focus
   const neighbors = useMemo(() => {
     if (!selectedNodeId) return new Set<string>();
     const set = new Set<string>();
@@ -279,11 +301,10 @@ export const KnowledgeView = () => {
 
   const handleSidebarClick = (id: string) => {
     setSelectedNodeId(id);
-    setViewMode('note'); // Sidebar opens note instantly
+    setViewMode('note');
   };
 
   const handleGraphNodeClick = (id: string) => {
-    // If clicking the same node again, open note view
     if (selectedNodeId === id) {
       setViewMode('note');
     } else {
@@ -307,21 +328,39 @@ export const KnowledgeView = () => {
       
       {/* ── LEFT SIDEBAR (Vault) ── */}
       <aside className="w-[280px] bg-white border-r border-gray-150 flex flex-col shadow-[4px_0_24px_rgba(0,0,0,0.02)] shrink-0 z-20">
-        <div className="p-6 border-b border-gray-100">
-          <h2 className="font-heading font-black text-xl text-text-primary flex items-center gap-2.5 mb-5">
-            <div className="w-8 h-8 rounded-xl bg-primary/10 flex items-center justify-center">
-              <FolderTree className="w-4 h-4 text-primary" />
-            </div>
-            Vault
-          </h2>
+        <div className="p-5 border-b border-gray-100 space-y-4">
+          <div className="flex items-center justify-between">
+            <h2 className="font-heading font-black text-xl text-text-primary flex items-center gap-2.5">
+              <div className="w-8 h-8 rounded-xl bg-primary/10 flex items-center justify-center">
+                <FolderTree className="w-4 h-4 text-primary" />
+              </div>
+              Vault
+            </h2>
+            <button 
+              onClick={() => { setSelectedNodeId(null); setViewMode('create'); }}
+              className="w-8 h-8 rounded-full hover:bg-gray-100 flex items-center justify-center text-primary transition-colors"
+              title="New Note"
+            >
+              <Plus className="w-5 h-5" />
+            </button>
+          </div>
+          
+          <button
+            onClick={() => { setSelectedNodeId(null); setViewMode('create'); }}
+            className="w-full bg-primary hover:bg-primary-hover text-white rounded-xl py-2.5 text-xs font-bold transition-all shadow-sm active:scale-95 flex items-center justify-center gap-2"
+          >
+            <FileText className="w-3.5 h-3.5" />
+            Create Quick Note
+          </button>
+
           <div className="relative group">
             <Search className="w-4 h-4 text-gray-400 absolute left-3 top-1/2 -translate-y-1/2 group-focus-within:text-primary transition-colors" />
             <input 
               type="text" 
-              placeholder="Search notes..." 
+              placeholder="Search vault..." 
               value={search}
               onChange={(e) => setSearch(e.target.value)}
-              className="w-full bg-gray-50 border border-gray-200 rounded-xl py-2.5 pl-9 pr-3 text-xs focus:ring-2 focus:ring-primary/20 outline-none font-semibold transition-all hover:border-gray-300"
+              className="w-full bg-gray-50 border border-gray-200 rounded-xl py-2 pl-9 pr-3 text-xs focus:ring-2 focus:ring-primary/20 outline-none font-semibold transition-all hover:border-gray-300"
             />
           </div>
         </div>
@@ -369,13 +408,16 @@ export const KnowledgeView = () => {
         {/* Top Header / View Toggle */}
         <header className="h-16 bg-white/80 backdrop-blur-md flex items-center justify-between px-8 shrink-0 border-b border-gray-150 z-20">
           <div className="flex items-center gap-3">
-            {selectedNode && (
+            {viewMode === 'create' ? (
+              <span className="text-primary text-sm font-bold flex items-center gap-2">
+                <Plus className="w-4 h-4" /> Drafting New Note
+              </span>
+            ) : selectedNode ? (
               <div className="flex items-center gap-2 text-sm font-bold text-text-primary">
                 <span className="w-2 h-2 rounded-full" style={{ background: KIND_COLOR[selectedNode.kind || 'concept'] }} />
                 {selectedNode.label.length > 50 ? selectedNode.label.slice(0, 50) + '...' : selectedNode.label}
               </div>
-            )}
-            {!selectedNode && (
+            ) : (
               <span className="text-text-secondary text-sm font-semibold flex items-center gap-2">
                 <MousePointerClick className="w-4 h-4" /> Select a node to explore
               </span>
@@ -383,13 +425,21 @@ export const KnowledgeView = () => {
           </div>
           
           <div className="flex items-center bg-gray-100/80 p-1.5 rounded-xl border border-gray-200/50">
+            {viewMode === 'create' && (
+              <button
+                onClick={() => setViewMode('graph')}
+                className="px-3 py-1.5 text-xs font-extrabold rounded-lg text-gray-500 hover:text-text-primary flex items-center gap-1.5 mr-2"
+              >
+                Cancel
+              </button>
+            )}
             <button
-              onClick={() => setViewMode('note')}
-              disabled={!selectedNode}
+              onClick={() => { if (selectedNode) setViewMode('note'); }}
+              disabled={!selectedNode && viewMode !== 'create'}
               className={cn(
                 "px-5 py-1.5 text-xs font-extrabold rounded-lg transition-all flex items-center gap-2",
-                viewMode === 'note' ? "bg-white text-primary shadow-sm" : "text-text-secondary hover:text-text-primary",
-                !selectedNode && "opacity-40 cursor-not-allowed"
+                (viewMode === 'note' || viewMode === 'create') ? "bg-white text-primary shadow-sm" : "text-text-secondary hover:text-text-primary",
+                !selectedNode && viewMode !== 'create' && "opacity-40 cursor-not-allowed"
               )}
             >
               <FileText className="w-3.5 h-3.5" /> Document View
@@ -426,7 +476,6 @@ export const KnowledgeView = () => {
                   viewBox={`0 0 ${SVG_W} ${SVG_H}`} 
                   preserveAspectRatio="xMidYMid meet"
                   onClick={(e) => {
-                    // Click on background unselects
                     if ((e.target as any).tagName === 'svg' || (e.target as any).tagName === 'rect') {
                       setSelectedNodeId(null);
                     }
@@ -444,7 +493,6 @@ export const KnowledgeView = () => {
                   <rect width={SVG_W} height={SVG_H} fill="url(#bg-grad)" />
                   <rect width={SVG_W} height={SVG_H} fill="url(#grid)" />
 
-                  {/* Edges */}
                   {edges.map(e => {
                     const src = positions[e.source_id];
                     const tgt = positions[e.target_id];
@@ -480,7 +528,6 @@ export const KnowledgeView = () => {
                     );
                   })}
 
-                  {/* Nodes */}
                   {nodes.map(n => {
                     const pos = positions[n.id];
                     if (!pos) return null;
@@ -533,9 +580,11 @@ export const KnowledgeView = () => {
                   })}
                 </svg>
 
-                {/* Floating Preview Card inside Graph */}
                 {selectedNode && (
                   <div className="absolute top-6 left-6 w-80 bg-white/95 backdrop-blur-xl border border-gray-200/60 rounded-3xl p-6 shadow-2xl animate-fade-in pointer-events-auto">
+                    <button onClick={() => setSelectedNodeId(null)} className="absolute top-4 right-4 text-gray-400 hover:text-gray-600">
+                      <X className="w-4 h-4" />
+                    </button>
                     <div className="flex items-center gap-2 mb-3">
                       <span className="w-2.5 h-2.5 rounded-full" style={{ background: KIND_COLOR[selectedNode.kind || 'concept'] }} />
                       <span className="text-[9px] font-black uppercase tracking-widest text-text-secondary">{selectedNode.kind || 'Concept'}</span>
@@ -544,7 +593,7 @@ export const KnowledgeView = () => {
                       {selectedNode.label}
                     </h3>
                     <p className="text-xs font-medium text-text-secondary mb-5">
-                      {backlinks.length} connected mentions found in your Knowledge Base.
+                      {backlinks.length} connected mentions found.
                     </p>
                     <button
                       onClick={() => setViewMode('note')}
@@ -555,7 +604,6 @@ export const KnowledgeView = () => {
                   </div>
                 )}
                 
-                {/* Graph overlay legend */}
                 <div className="absolute bottom-6 right-6 bg-white/90 backdrop-blur-md rounded-2xl p-4 border border-gray-200/50 shadow-xl pointer-events-none">
                   <h4 className="text-[9px] font-black uppercase text-gray-400 tracking-widest mb-3">Graph Legend</h4>
                   <div className="space-y-2">
@@ -570,14 +618,12 @@ export const KnowledgeView = () => {
               </div>
 
               {/* NOTE VIEW (Premium Zettelkasten Document) */}
-              {selectedNode && (
-                <div className={cn("absolute inset-0 bg-[#fafafa] transition-opacity duration-300 overflow-y-auto", viewMode === 'note' ? 'opacity-100 z-10' : 'opacity-0 z-0 pointer-events-none')}>
-                  {/* Subtle document grid background */}
+              {selectedNode && viewMode === 'note' && (
+                <div className="absolute inset-0 bg-[#fafafa] overflow-y-auto z-10 animate-fade-in">
                   <div className="absolute inset-0 pointer-events-none" style={{ backgroundImage: 'radial-gradient(#e5e7eb 1px, transparent 1px)', backgroundSize: '24px 24px', opacity: 0.5 }} />
                   
                   <div className="max-w-5xl mx-auto py-12 px-8 relative flex gap-12 items-start flex-col lg:flex-row">
                     
-                    {/* Main Content Pane */}
                     <div className="flex-1 bg-white rounded-[2rem] p-10 md:p-14 shadow-xl border border-gray-150">
                       <div className="flex items-center gap-3 mb-6">
                         <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-lg text-[10px] font-black uppercase tracking-widest border"
@@ -608,8 +654,7 @@ export const KnowledgeView = () => {
                       </div>
                     </div>
 
-                    {/* Right Pane: Linked Mentions */}
-                    <div className="w-full lg:w-80 shrink-0 space-y-6">
+                    <div className="w-full lg:w-80 shrink-0 space-y-6 sticky top-8">
                       <h3 className="font-heading font-black text-lg text-text-primary flex items-center gap-2 border-b border-gray-200 pb-3">
                         <LinkIcon className="w-5 h-5 text-primary" />
                         Linked Mentions
@@ -662,6 +707,56 @@ export const KnowledgeView = () => {
                   </div>
                 </div>
               )}
+
+              {/* CREATE NOTE VIEW (Notepad) */}
+              {viewMode === 'create' && (
+                <div className="absolute inset-0 bg-[#fafafa] overflow-y-auto z-10 animate-fade-in">
+                  <div className="absolute inset-0 pointer-events-none" style={{ backgroundImage: 'radial-gradient(#e5e7eb 1px, transparent 1px)', backgroundSize: '24px 24px', opacity: 0.5 }} />
+                  
+                  <div className="max-w-3xl mx-auto py-12 px-8 relative">
+                    <div className="bg-white rounded-[2rem] p-10 md:p-12 shadow-2xl border border-gray-150 relative">
+                      
+                      <div className="flex items-center justify-between mb-8">
+                        <div className="flex items-center gap-3">
+                          <div className="w-10 h-10 bg-primary/10 rounded-xl flex items-center justify-center text-primary">
+                            <FileText className="w-5 h-5" />
+                          </div>
+                          <div>
+                            <h2 className="font-heading font-black text-xl text-text-primary">Draft New Note</h2>
+                            <p className="text-xs font-semibold text-text-secondary">It will be analyzed by KAIRO and mapped into the Knowledge Graph.</p>
+                          </div>
+                        </div>
+                        <button
+                          onClick={handleSaveNote}
+                          disabled={isSaving || (!noteTitle && !noteContent)}
+                          className="bg-primary hover:bg-primary-hover disabled:opacity-50 disabled:pointer-events-none text-white px-6 py-2.5 rounded-xl font-bold text-sm transition-all shadow-md active:scale-95 flex items-center gap-2"
+                        >
+                          {isSaving ? <Loader2 className="w-4 h-4 animate-spin" /> : <Save className="w-4 h-4" />}
+                          Save Note
+                        </button>
+                      </div>
+
+                      <div className="space-y-6">
+                        <input
+                          type="text"
+                          placeholder="Note Title"
+                          value={noteTitle}
+                          onChange={(e) => setNoteTitle(e.target.value)}
+                          className="w-full bg-transparent border-b border-gray-200 pb-3 text-3xl font-heading font-black text-text-primary placeholder:text-gray-300 focus:border-primary outline-none transition-colors"
+                        />
+                        <textarea
+                          placeholder="Start typing your ideas, research, or thoughts..."
+                          value={noteContent}
+                          onChange={(e) => setNoteContent(e.target.value)}
+                          className="w-full h-[400px] bg-transparent border-none text-base text-text-primary placeholder:text-gray-400 outline-none resize-none leading-relaxed"
+                        />
+                      </div>
+                      
+                    </div>
+                  </div>
+                </div>
+              )}
+
             </>
           )}
         </div>
