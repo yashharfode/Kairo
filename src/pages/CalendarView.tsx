@@ -259,10 +259,10 @@ export const CalendarView = () => {
   });
   return (
     <div className={cn(
-      "p-4 md:p-6 flex flex-col font-body bg-[#fbfbfe] overflow-hidden space-y-4 transition-all duration-300 animate-page-reveal",
+      "flex flex-col font-body bg-[#fbfbfe] overflow-hidden transition-all duration-300 animate-page-reveal",
       isFullscreen 
-        ? "fixed inset-0 z-[999] w-screen h-screen" 
-        : "h-[calc(100vh-32px)] md:h-[calc(100vh-48px)] w-full"
+        ? "fixed inset-0 z-[999] w-screen h-screen p-0" 
+        : "p-4 md:p-6 space-y-4 h-[calc(100vh-32px)] md:h-[calc(100vh-48px)] w-full"
     )}>
 
       {/* Dynamic Action Toast */}
@@ -273,7 +273,8 @@ export const CalendarView = () => {
         </div>
       )}
 
-      {/* Top Header */}
+      {/* Top Header - hidden in fullscreen */}
+      {!isFullscreen && (
       <header className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 shrink-0 pb-1">
         <div>
           <h1 className="text-xl font-heading font-black text-text-primary tracking-tight">Mission Calendar</h1>
@@ -326,9 +327,10 @@ export const CalendarView = () => {
           </button>
         </div>
       </header>
+      )}
 
-      {/* UPCOMING REMINDER ALERT BANNER - compact, auto-hides */}
-      {showReminder && (
+      {/* UPCOMING REMINDER ALERT BANNER - hidden in fullscreen */}
+      {showReminder && !isFullscreen && (
         <div className="bg-gradient-to-r from-orange-500 to-red-500 rounded-xl px-4 py-2.5 text-white flex items-center justify-between gap-3 shadow-md shadow-orange-500/20 shrink-0 animate-fade-in relative overflow-hidden">
           <div className="flex items-center gap-3 relative z-10">
             <BellRing className="w-4 h-4 text-white animate-bounce shrink-0" />
@@ -352,9 +354,15 @@ export const CalendarView = () => {
       )}
 
       {/* THREE COLUMN GRID (Outlook Layout) */}
-      <div className="flex-1 grid grid-cols-1 lg:grid-cols-12 gap-5 min-h-0 h-full overflow-hidden">
+      <div className={cn(
+        "flex-1 min-h-0 overflow-hidden",
+        isFullscreen 
+          ? "grid grid-cols-1" 
+          : "grid grid-cols-1 lg:grid-cols-12 gap-5 h-full"
+      )}>
         
-        {/* COLUMN 1: OUTLOOK LEFT PANEL (lg:col-span-2) */}
+        {/* COLUMN 1: OUTLOOK LEFT PANEL - hidden in fullscreen */}
+        {!isFullscreen && (
         <div className="lg:col-span-2 hidden lg:flex flex-col gap-4 h-full overflow-y-auto scrollbar-none pb-4 shrink-0">
           
           {/* Mini Month Picker */}
@@ -389,12 +397,18 @@ export const CalendarView = () => {
           </div>
 
         </div>
+        )}
 
-        {/* COLUMN 2: THE MAIN CALENDAR GRID (lg:col-span-7) */}
-        <div className="lg:col-span-7 flex flex-col h-full bg-white rounded-[2rem] border border-[#0F172A]/[0.08] shadow-sm p-4 md:p-5 min-h-0 relative">
+        {/* COLUMN 2: THE MAIN CALENDAR GRID - full width in fullscreen */}
+        <div className={cn(
+          "flex flex-col h-full bg-white min-h-0 relative",
+          isFullscreen 
+            ? "w-full rounded-none border-0 shadow-none p-4" 
+            : "lg:col-span-7 rounded-[2rem] border border-[#0F172A]/[0.08] shadow-sm p-4 md:p-5"
+        )}>
           
-          {/* Calendar Navigation header */}
-          <div className="flex items-center justify-between gap-4 border-b border-gray-100 pb-4 mb-4">
+          {/* Calendar Navigation header + Fullscreen exit overlay */}
+          <div className="flex items-center justify-between gap-4 border-b border-gray-100 pb-3 mb-3 shrink-0">
             <div className="flex items-center gap-3">
               <div className="flex items-center border border-gray-200 rounded-xl bg-white overflow-hidden shadow-sm">
                 <button onClick={handlePrev} className="p-2 hover:bg-gray-50 border-r border-gray-200 active:scale-95 transition-all"><ChevronLeft className="w-4 h-4 text-text-primary" /></button>
@@ -403,6 +417,42 @@ export const CalendarView = () => {
               <h2 className="font-heading font-black text-lg text-text-primary tracking-tight">
                 {currentRangeText}
               </h2>
+            </div>
+
+            {/* Right controls: view switcher + exit fullscreen */}
+            <div className="flex items-center gap-2">
+              {isFullscreen && (
+                <div className="flex items-center bg-gray-100/80 p-1 rounded-xl border border-gray-200/50">
+                  {[
+                    { id: 'timeGridDay', label: 'Day' },
+                    { id: 'timeGridWeek', label: 'Week' },
+                    { id: 'dayGridMonth', label: 'Month' }
+                  ].map(v => (
+                    <button
+                      key={v.id}
+                      onClick={() => handleViewChange(v.id as any)}
+                      className={cn(
+                        "px-4 py-1.5 text-xs font-extrabold rounded-lg transition-all",
+                        activeView === v.id ? "bg-white text-primary shadow-sm" : "text-text-secondary hover:text-text-primary"
+                      )}
+                    >
+                      {v.label}
+                    </button>
+                  ))}
+                </div>
+              )}
+              <button 
+                onClick={() => setIsFullscreen(!isFullscreen)} 
+                className={cn(
+                  "px-3 py-2 rounded-xl active:scale-95 transition-all flex items-center gap-1.5 text-xs font-bold",
+                  isFullscreen 
+                    ? "bg-slate-900 text-white hover:bg-slate-800 shadow-lg" 
+                    : "border border-gray-200 hover:bg-gray-50 bg-white text-text-primary"
+                )}
+              >
+                {isFullscreen ? <Minimize2 className="w-4 h-4" /> : <Maximize2 className="w-4 h-4 text-text-secondary" />}
+                <span className="hidden md:inline">{isFullscreen ? 'Exit Full' : 'Fit Screen'}</span>
+              </button>
             </div>
           </div>
 
@@ -513,7 +563,8 @@ export const CalendarView = () => {
 
         </div>
 
-        {/* COLUMN 3: RIGHT PANEL HUD DETAILS (lg:col-span-3) */}
+        {/* COLUMN 3: RIGHT PANEL - hidden in fullscreen */}
+        {!isFullscreen && (
         <div className="lg:col-span-3 hidden lg:flex flex-col gap-4 h-full overflow-y-auto scrollbar-none pb-6 pr-1">
           
           {/* 1. TODAY'S FOCUS */}
@@ -596,6 +647,7 @@ export const CalendarView = () => {
           </div>
 
         </div>
+        )}
 
       </div>
 
