@@ -49,36 +49,49 @@ const DaysLeftArc = ({ days, total = 10 }: { days: number; total?: number }) => 
 
 // --- SEMI-CIRCULAR HEALTH GAUGE ---
 const HealthSemiCircle = ({ value }: { value: number }) => {
-  const size = 110;
-  const strokeWidth = 7;
-  const radius = 40;
-  const circ = Math.PI * radius; 
+  const size = 160;
+  const strokeWidth = 10;
+  const radius = 60;
+  const circ = Math.PI * radius;
   const offset = circ - (value / 100) * circ;
+  const scoreColor = value >= 80 ? '#10B981' : value >= 60 ? '#F59E0B' : '#EF4444';
+  const scoreLabel = value >= 80 ? 'Excellent' : value >= 60 ? 'Good' : 'Needs Work';
 
   return (
-    <div className="relative flex flex-col items-center justify-center h-[65px] overflow-hidden">
-      <svg width={size} height={size / 2 + 5} viewBox={`0 0 ${size} ${size / 2 + 5}`} className="overflow-visible">
+    <div className="relative flex flex-col items-center justify-center" style={{ height: 105 }}>
+      <svg width={size} height={size / 2 + 14} viewBox={`0 0 ${size} ${size / 2 + 14}`} className="overflow-visible">
+        <defs>
+          <linearGradient id="healthGrad" x1="0%" y1="0%" x2="100%" y2="0%">
+            <stop offset="0%" stopColor="#6366F1" />
+            <stop offset="100%" stopColor={scoreColor} />
+          </linearGradient>
+        </defs>
+        {/* Track */}
         <path
           d={`M ${size/2 - radius} ${size/2} A ${radius} ${radius} 0 0 1 ${size/2 + radius} ${size/2}`}
           fill="none"
-          stroke="rgba(15, 23, 42, 0.05)"
+          stroke="rgba(15, 23, 42, 0.06)"
           strokeWidth={strokeWidth}
           strokeLinecap="round"
         />
+        {/* Value arc */}
         <path
           d={`M ${size/2 - radius} ${size/2} A ${radius} ${radius} 0 0 1 ${size/2 + radius} ${size/2}`}
           fill="none"
-          stroke="#14B8A6" 
+          stroke="url(#healthGrad)"
           strokeWidth={strokeWidth}
           strokeDasharray={circ}
           strokeDashoffset={offset}
           strokeLinecap="round"
           className="transition-all duration-1000 ease-out"
+          style={{ filter: `drop-shadow(0 0 6px ${scoreColor}60)` }}
         />
       </svg>
-      <div className="absolute top-[18px] flex flex-col items-center">
-        <span className="text-2xl font-mono font-black text-text-primary leading-none">{value}</span>
-        <span className="text-[8px] text-text-secondary font-bold uppercase tracking-wider mt-0.5">/100</span>
+      {/* Score display centered in arc */}
+      <div className="absolute flex flex-col items-center" style={{ top: 28 }}>
+        <span className="text-4xl font-mono font-black leading-none" style={{ color: scoreColor }}>{value}</span>
+        <span className="text-[9px] text-text-secondary font-bold uppercase tracking-widest mt-0.5">/100</span>
+        <span className="text-[9px] font-extrabold uppercase tracking-wider mt-0.5" style={{ color: scoreColor }}>{scoreLabel}</span>
       </div>
     </div>
   );
@@ -609,27 +622,35 @@ export const WorkspacesView = () => {
           <div className="lg:col-span-3 flex flex-col gap-5 w-full shrink-0">
             
             {/* 1. WORKSPACE HEALTH */}
-            <div className="mc-card p-6 flex flex-col items-center">
-              <h3 className="font-heading font-black text-xs text-text-primary self-start mb-4 uppercase tracking-wider">Workspace Health</h3>
+            <div className="mc-card p-6">
+              <div className="flex items-center justify-between mb-4">
+                <h3 className="font-heading font-black text-sm text-text-primary uppercase tracking-wider">Workspace Health</h3>
+                <span className="text-[10px] font-mono font-bold text-emerald-600 bg-emerald-50 border border-emerald-100 px-2 py-0.5 rounded-full">Live</span>
+              </div>
               
-              <HealthSemiCircle value={78} />
-              <p className="text-[9px] font-mono font-bold text-text-secondary text-center mt-1.5">Good Progress! Keep it up.</p>
+              <div className="flex flex-col items-center">
+                <HealthSemiCircle value={78} />
+                <p className="text-[10px] font-bold text-text-secondary text-center mt-2">Good Progress! Keep it up.</p>
+              </div>
 
               {/* Progress bars list */}
-              <div className="w-full space-y-2.5 mt-5">
+              <div className="w-full space-y-3 mt-5 pt-4 border-t border-slate-100">
                 {[
-                  { label: 'Planning', score: 90, color: 'bg-primary' },
-                  { label: 'Execution', score: 65, color: 'bg-teal-500' },
-                  { label: 'Resources', score: 80, color: 'bg-indigo-500' },
-                  { label: 'Risk', score: 60, color: 'bg-orange-500' }
+                  { label: 'Planning',  score: 90, color: '#6366F1', bg: 'bg-indigo-500' },
+                  { label: 'Execution', score: 65, color: '#F59E0B', bg: 'bg-amber-400' },
+                  { label: 'Resources', score: 80, color: '#10B981', bg: 'bg-emerald-500' },
+                  { label: 'Risk',      score: 60, color: '#EF4444', bg: 'bg-red-500' }
                 ].map(item => (
-                  <div key={item.label} className="space-y-1">
-                    <div className="flex justify-between items-center text-[10px] font-bold text-text-primary">
-                      <span>{item.label}</span>
-                      <span className="font-mono">{item.score}%</span>
+                  <div key={item.label}>
+                    <div className="flex justify-between items-center mb-1.5">
+                      <span className="text-xs font-bold text-text-primary">{item.label}</span>
+                      <span className="text-xs font-mono font-black" style={{ color: item.color }}>{item.score}%</span>
                     </div>
-                    <div className="w-full bg-slate-100 h-1 rounded-full overflow-hidden">
-                      <div className={cn("h-full rounded-full", item.color)} style={{ width: `${item.score}%` }} />
+                    <div className="w-full bg-slate-100 h-2 rounded-full overflow-hidden">
+                      <div
+                        className={`h-full rounded-full transition-all duration-700 ease-out ${item.bg}`}
+                        style={{ width: `${item.score}%` }}
+                      />
                     </div>
                   </div>
                 ))}
