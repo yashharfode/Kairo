@@ -316,6 +316,34 @@ class LemmaService {
   // 4. Get Memories
   async getMemories(): Promise<Memory[]> {
     const rows = await this.queryDatastore<any>('SELECT * FROM memories ORDER BY created_at DESC');
+    if (rows.length === 0) {
+      return [
+        {
+          id: 'seed-mem-1',
+          userId: 'seed-user',
+          content: 'Targeted striver DSA problems. Completed Arrays & Strings practice block.',
+          tags: ['DSA', 'Placements'],
+          createdAt: new Date(Date.now() - 24*60*60*1000).toISOString(),
+          updatedAt: new Date(Date.now() - 24*60*60*1000).toISOString(),
+        },
+        {
+          id: 'seed-mem-2',
+          userId: 'seed-user',
+          content: 'Configured API server port to 5000 and verified client headers.',
+          tags: ['MERN', 'Deployment'],
+          createdAt: new Date(Date.now() - 2*24*60*60*1000).toISOString(),
+          updatedAt: new Date(Date.now() - 2*24*60*60*1000).toISOString(),
+        },
+        {
+          id: 'seed-mem-3',
+          userId: 'seed-user',
+          content: 'AI Chief of Staff project scope: requires dashboard UI matching mockup specifications.',
+          tags: ['KAIRO', 'Hackathons'],
+          createdAt: new Date(Date.now() - 3*24*60*60*1000).toISOString(),
+          updatedAt: new Date(Date.now() - 3*24*60*60*1000).toISOString(),
+        }
+      ];
+    }
     return rows.map((row) => ({
       id: row.id,
       userId: row.user_id,
@@ -526,6 +554,17 @@ class LemmaService {
   // 9. Get Knowledge Nodes
   async getKnowledgeNodes(): Promise<{ id: string; label: string; kind?: string }[]> {
     const rows = await this.queryDatastore<any>('SELECT * FROM knowledge_nodes ORDER BY created_at DESC');
+    if (rows.length === 0) {
+      return [
+        { id: 'node-mern', label: 'MERN Stack', kind: 'concept' },
+        { id: 'node-react', label: 'React.js', kind: 'concept' },
+        { id: 'node-db', label: 'Database Indexing', kind: 'concept' },
+        { id: 'node-dsa', label: 'DSA Arrays', kind: 'concept' },
+        { id: 'node-pntr', label: 'Two Pointers', kind: 'concept' },
+        { id: 'node-slide', label: 'Sliding Window', kind: 'concept' },
+        { id: 'node-syst', label: 'System Design', kind: 'concept' },
+      ];
+    }
     return rows.map((row) => ({
       id: row.id,
       label: row.label || row.name || row.title || row.id,
@@ -536,6 +575,15 @@ class LemmaService {
   // 10. Get Knowledge Edges
   async getKnowledgeEdges(): Promise<{ id: string; source_id: string; target_id: string; relation?: string }[]> {
     const rows = await this.queryDatastore<any>('SELECT * FROM knowledge_edges');
+    if (rows.length === 0) {
+      return [
+        { id: 'edge-1', source_id: 'node-mern', target_id: 'node-react', relation: 'defines' },
+        { id: 'edge-2', source_id: 'node-db', target_id: 'node-mern', relation: 'optimizes' },
+        { id: 'edge-3', source_id: 'node-dsa', target_id: 'node-pntr', relation: 'implements' },
+        { id: 'edge-4', source_id: 'node-dsa', target_id: 'node-slide', relation: 'uses' },
+        { id: 'edge-5', source_id: 'node-mern', target_id: 'node-syst', relation: 'deploys' },
+      ];
+    }
     return rows.map((row) => ({
       id: row.id,
       source_id: row.source_node_id,
