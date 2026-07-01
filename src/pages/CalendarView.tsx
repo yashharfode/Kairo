@@ -6,7 +6,7 @@ import interactionPlugin from '@fullcalendar/interaction';
 import { calendarService } from '@/services/CalendarService';
 import {
   ChevronLeft, ChevronRight, Calendar as CalendarIcon, 
-  Sparkles, Check, Filter, BellRing, X
+  Sparkles, Check, Filter, BellRing, X, Maximize2, Minimize2
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import '../styles/calendar.css';
@@ -178,6 +178,7 @@ export const CalendarView = () => {
 
   const [activeDate, setActiveDate] = useState(new Date());
   const [showReminder, setShowReminder] = useState(true);
+  const [isFullscreen, setIsFullscreen] = useState(false);
 
   const calendarRef = useRef<FullCalendar>(null);
 
@@ -256,7 +257,12 @@ export const CalendarView = () => {
   });
 
   return (
-    <div className="p-4 md:p-6 h-[calc(100vh-80px)] flex flex-col font-body bg-[#fbfbfe] overflow-hidden space-y-4">
+    <div className={cn(
+      "p-4 md:p-6 flex flex-col font-body bg-[#fbfbfe] overflow-hidden space-y-4 transition-all duration-300",
+      isFullscreen 
+        ? "fixed inset-0 z-[999] w-screen h-screen" 
+        : "h-full w-full"
+    )}>
 
       {/* Dynamic Action Toast */}
       {toast && (
@@ -305,6 +311,17 @@ export const CalendarView = () => {
 
           <button onClick={() => alert('Filters: show all')} className="p-2 border border-gray-200 hover:bg-gray-50 bg-white rounded-xl active:scale-95 transition-all text-text-secondary">
             <Filter className="w-4 h-4" />
+          </button>
+
+          <button 
+            onClick={() => setIsFullscreen(!isFullscreen)} 
+            className="px-3 py-2 border border-gray-200 hover:bg-gray-50 bg-white rounded-xl active:scale-95 transition-all text-text-primary flex items-center gap-1.5"
+            title={isFullscreen ? "Exit Full Screen" : "Fit Screen"}
+          >
+            {isFullscreen ? <Minimize2 className="w-4 h-4 text-primary" /> : <Maximize2 className="w-4 h-4 text-text-secondary" />}
+            <span className="text-xs font-bold hidden md:inline">
+              {isFullscreen ? "Exit Full" : "Fit Screen"}
+            </span>
           </button>
         </div>
       </header>

@@ -14,7 +14,7 @@ const PIPELINE_STEPS = [
   { id: 'brain',        icon: '💡', label: 'Updating Brain',    sub: 'Writing to memory pod…' },
 ];
 
-type StepStatus = 'idle' | 'running' | 'done';
+type StepStatus = 'idle' | 'running' | 'done' | 'completed' | 'failed';
 interface PipelineState {
   steps: Record<string, StepStatus>;
   currentLabel: string;
@@ -273,12 +273,12 @@ function InputPhase({ text, title, source, priority, textareaRef, onTextChange, 
           <p className="text-[10px] font-extrabold text-gray-400 uppercase tracking-widest">Optional Details</p>
 
           <div>
-            <label className="block text-[11px] font-bold text-gray-500 mb-1.5">Title (auto-detected if blank)</label>
+            <label className="block text-[11px] font-bold text-gray-500 mb-1.5">Title (Optional - auto-detected if blank)</label>
             <input
               type="text"
               value={title}
               onChange={(e) => onTitleChange(e.target.value)}
-              placeholder="e.g. Gappy AI Hackathon Registration"
+              placeholder="Optional (e.g. Gappy AI Hackathon Registration)"
               className="w-full rounded-xl border border-gray-200 px-4 py-2.5 text-sm bg-gray-50 focus:ring-2 focus:ring-indigo-200 outline-none text-gray-800 font-medium"
             />
           </div>
@@ -391,7 +391,7 @@ function ProcessingPhase({ pipeline, text }: ProcessingPhaseProps) {
             const status = getStatus(step.id);
             const isVisible = i < visibleCount;
             const isRunning = status === 'running';
-            const isDone = status === 'done' || (status === 'idle' && i < PIPELINE_STEPS.findIndex(s => getStatus(s.id) === 'running'));
+            const isDone = status === 'done' || status === 'completed' || (status === 'idle' && i < PIPELINE_STEPS.findIndex(s => getStatus(s.id) === 'running'));
             const isLast = i === PIPELINE_STEPS.length - 1;
 
             return (
