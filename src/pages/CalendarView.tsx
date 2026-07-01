@@ -155,7 +155,7 @@ export const CalendarView = () => {
   };
 
   return (
-    <div className="p-4 md:p-6 h-full flex flex-col font-body bg-[#fbfbfe] overflow-hidden space-y-6">
+    <div className="p-4 md:p-6 h-[calc(100vh-80px)] flex flex-col font-body bg-[#fbfbfe] overflow-hidden space-y-4">
 
       {/* Dynamic Action Toast */}
       {toast && (
@@ -209,7 +209,7 @@ export const CalendarView = () => {
       </header>
 
       {/* Main Grid Content */}
-      <div className="flex-1 grid grid-cols-1 lg:grid-cols-12 gap-5 min-h-0 items-start">
+      <div className="flex-1 grid grid-cols-1 lg:grid-cols-12 gap-5 min-h-0 h-full overflow-hidden">
         
         {/* LEFT COLUMN: THE CALENDAR (9-Cols) */}
         <div className="lg:col-span-9 flex flex-col h-full bg-white rounded-[2rem] border border-[#0F172A]/[0.08] shadow-sm p-5 min-h-0 relative">
@@ -250,6 +250,7 @@ export const CalendarView = () => {
               initialView="timeGridWeek"
               headerToolbar={false} // Disable default toolbar
               height="100%"
+              expandRows={true}
               events={events}
               editable={true}
               selectable={true}
@@ -276,21 +277,21 @@ export const CalendarView = () => {
                     style={{ borderLeft: `4px solid ${colorVal.border}` }}
                   >
                     <div>
-                      <div className="text-[7.5px] opacity-75 font-mono font-bold leading-none mb-1 text-white">
+                      <div className="text-[9px] opacity-80 font-mono font-bold leading-none mb-1 text-white">
                         {eventInfo.timeText || 'All Day'}
                       </div>
-                      <div className="font-sans font-extrabold text-[9.5px] leading-tight text-white flex items-start gap-1">
-                        {completed && <Check className="w-3 h-3 text-white shrink-0 mt-0.5 stroke-[3px]" />}
+                      <div className="font-sans font-black text-[11px] leading-tight text-white flex items-start gap-1">
+                        {completed && <Check className="w-3.5 h-3.5 text-white shrink-0 mt-0.5 stroke-[3px]" />}
                         <span className="line-clamp-2">{eventInfo.event.title}</span>
                       </div>
                     </div>
                     
-                    <div className="mt-1 flex items-center justify-between">
-                      <span className="text-[7px] font-black uppercase tracking-wider bg-white/20 text-white px-1.5 py-0.5 rounded-md">
+                    <div className="mt-1.5 flex items-center justify-between">
+                      <span className="text-[8px] font-black uppercase tracking-wider bg-white/25 text-white px-1.5 py-0.5 rounded-md">
                         {colorVal.label}
                       </span>
                       {priority && (
-                        <span className="text-[6.5px] font-black uppercase text-red-100 bg-red-600/40 px-1 rounded">
+                        <span className="text-[7.5px] font-black uppercase text-red-100 bg-red-600/40 px-1.5 rounded">
                           {priority}
                         </span>
                       )}
@@ -310,7 +311,7 @@ export const CalendarView = () => {
         </div>
 
         {/* RIGHT COLUMN: SIDEBAR WIDGETS (3-Cols) */}
-        <div className="lg:col-span-3 flex flex-col gap-5 w-full shrink-0">
+        <div className="lg:col-span-3 flex flex-col gap-4 w-full h-full overflow-y-auto scrollbar-none pb-6 pr-1">
           
           {/* 1. TODAY'S FOCUS */}
           <div className="mc-card p-5 space-y-4">
