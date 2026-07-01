@@ -204,61 +204,6 @@ export const Dashboard = () => {
               pendingTasks={pendingTasks}
             />
 
-            {/* KAIRO Context Radar */}
-            <div className="bg-primary/5 border border-primary/10 rounded-[2rem] p-6 shadow-sm">
-              <div className="flex justify-between items-center mb-4">
-                <h3 className="font-heading font-black text-sm text-primary flex items-center gap-1.5">
-                  <Brain className="w-4 h-4" />
-                  Context Radar
-                </h3>
-                <Link to="/inbox" className="text-[10px] font-extrabold text-primary uppercase hover:underline">Ingest</Link>
-              </div>
-              
-              {memories.length > 0 ? (
-                <div className="space-y-3">
-                  <p className="text-xs text-text-secondary font-medium">Latest extracted intelligence:</p>
-                  <div className="bg-white p-3.5 rounded-2xl border border-primary/10 text-xs text-text-primary font-medium leading-relaxed shadow-sm italic">
-                    "{memories[0].content}"
-                  </div>
-                </div>
-              ) : (
-                <p className="text-xs text-primary/80 font-medium leading-relaxed bg-white/50 p-4 rounded-2xl border border-primary/10">
-                  No context saved yet. Send emails/texts to the Smart Inbox to bootstrap the intelligence loop.
-                </p>
-              )}
-            </div>
-
-            {/* Flagship Workspaces Widget */}
-            <div className="bg-white border border-gray-150 rounded-[2rem] p-6 shadow-sm">
-              <div className="flex justify-between items-center mb-5">
-                <h3 className="font-heading font-black text-sm text-text-primary flex items-center gap-1.5">
-                  <Briefcase className="w-4 h-4 text-text-secondary" />
-                  Workspaces
-                </h3>
-                <span className="text-[9px] bg-gray-100 text-text-secondary px-2 py-0.5 rounded-lg uppercase font-bold">Active</span>
-              </div>
-              
-              <div className="space-y-3">
-                {workspaces.slice(0, 3).map((ws) => (
-                  <Link
-                    key={ws.id}
-                    to="/workspaces"
-                    className="block p-3.5 rounded-2xl border border-gray-100 bg-gray-50/30 hover:bg-white hover:border-primary/20 transition-all group"
-                  >
-                    <div className="flex justify-between items-center text-[10px] mb-1">
-                      <span className="font-extrabold text-primary/70 uppercase tracking-widest">{ws.organization.split(' ')[0]}</span>
-                      <span className="font-bold text-text-secondary">{ws.progress}%</span>
-                    </div>
-                    <h4 className="font-bold text-xs text-text-primary truncate group-hover:text-primary transition-colors">{ws.title}</h4>
-                  </Link>
-                ))}
-                
-                {workspaces.length === 0 && (
-                  <p className="text-xs text-text-secondary text-center py-2">No workspaces active.</p>
-                )}
-              </div>
-            </div>
-
           </div>
         </div>
       )}
