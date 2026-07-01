@@ -276,18 +276,27 @@ const GanttTimeline = ({ missions }: { missions: Mission[] }) => {
             const colSpan = Math.max(1, endCol - startCol + 1);
 
             return (
-              <div key={m.id} className="grid grid-cols-[140px_1fr] items-center text-xs">
-                <div className="font-bold truncate pr-3 text-text-primary" title={m.title}>{m.title}</div>
+              <div key={m.id} className="grid grid-cols-[140px_1fr] items-center text-xs group/item">
+                <Link 
+                  to="/tasks"
+                  onClick={() => localStorage.setItem('selectedMissionId', m.id)}
+                  className="font-bold truncate pr-3 text-text-primary hover:text-primary transition-colors cursor-pointer"
+                  title={m.title}
+                >
+                  {m.title}
+                </Link>
                 <div className="grid gap-0.5 h-6 relative bg-gray-100/30 rounded-lg" style={{ gridTemplateColumns: 'repeat(30, minmax(0, 1fr))' }}>
-                  <div 
+                  <Link 
+                    to="/tasks"
+                    onClick={() => localStorage.setItem('selectedMissionId', m.id)}
                     style={{ gridColumn: `${colStart} / span ${colSpan}` }}
                     className={cn(
-                      "h-full rounded-md flex items-center px-2 text-[9px] font-bold text-white shadow-sm transition-all duration-300 truncate",
+                      "h-full rounded-md flex items-center px-2 text-[9px] font-bold text-white shadow-sm transition-all duration-300 truncate cursor-pointer hover:opacity-90 active:scale-[0.98]",
                       idx === 0 ? "bg-indigo-500 shadow-indigo-500/10" : idx === 1 ? "bg-teal-500 shadow-teal-500/10" : "bg-purple-500 shadow-purple-500/10"
                     )}
                   >
                     {m.title}
-                  </div>
+                  </Link>
                 </div>
               </div>
             );
@@ -384,7 +393,7 @@ export const Dashboard = () => {
   ];
 
   return (
-    <div className="p-4 md:p-8 max-w-7xl mx-auto space-y-6 md:space-y-8 font-body">
+    <div className="p-4 md:p-8 max-w-7xl mx-auto space-y-6 md:space-y-8 font-body animate-page-reveal">
       
       {/* Visual Confirm Toast */}
       {toastMessage && (
@@ -480,21 +489,43 @@ export const Dashboard = () => {
                 </div>
               </div>
 
-              <div className="space-y-5 text-sm text-text-secondary leading-relaxed relative z-10">
-                <p className="font-medium text-text-primary/80">
-                  Good morning! Based on your recent Smart Inbox ingests and active timeline, I've prioritized your focus areas.
-                </p>
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  <div className="bg-white/60 backdrop-blur-md p-4 rounded-2xl border border-white/40 shadow-sm">
-                    <span className="font-extrabold text-primary block mb-1 text-xs uppercase tracking-wider">🎯 Core Focus</span>
-                    <span className="text-text-primary font-medium text-sm">Complete the final KAIRO landing page redesign and demo video.</span>
+              {(() => {
+                const gappyMission = activeMissions.find(m => m.title.toLowerCase().includes('gappy') || m.id === 'm-gappy');
+                const dsaMission = activeMissions.find(m => m.title.toLowerCase().includes('dsa') || m.id === 'm-dsa');
+                const hasPending = pendingTasks.length > 0;
+
+                const coreFocus = gappyMission 
+                  ? "Record KAIRO demo videos, clean up code logic, and review hackathon checklist items."
+                  : dsaMission 
+                    ? "Solve today's sliding window & sorting algorithms DSA challenges."
+                    : activeMissions.length > 0 
+                      ? `Coordinate objectives under "${activeMissions[0].title}" workspace.`
+                      : "Ingest a new text signal in Smart Inbox to outline active objectives.";
+
+                const identifiedRisk = gappyMission 
+                  ? "Gappy AI Hackathon project target date is in 3 days. Focus level is critical."
+                  : hasPending
+                    ? `You have ${pendingTasks.length} pending tasks across ${activeMissions.length} active workspaces.`
+                    : "No immediate timeline risks detected. Telemetry is fully stable.";
+
+                return (
+                  <div className="space-y-5 text-sm text-text-secondary leading-relaxed relative z-10">
+                    <p className="font-medium text-text-primary/80">
+                      Welcome back! Based on your active workspaces and recent smart timeline ingestion data:
+                    </p>
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                      <div className="bg-white/60 backdrop-blur-md p-4 rounded-2xl border border-white/40 shadow-sm">
+                        <span className="font-extrabold text-primary block mb-1 text-xs uppercase tracking-wider">🎯 Core Focus</span>
+                        <span className="text-text-primary font-medium text-sm">{coreFocus}</span>
+                      </div>
+                      <div className="bg-white/60 backdrop-blur-md p-4 rounded-2xl border border-white/40 shadow-sm">
+                        <span className="font-extrabold text-orange-500 block mb-1 text-xs uppercase tracking-wider">⚠️ Proactive Warning</span>
+                        <span className="text-text-primary font-medium text-sm">{identifiedRisk}</span>
+                      </div>
+                    </div>
                   </div>
-                  <div className="bg-white/60 backdrop-blur-md p-4 rounded-2xl border border-white/40 shadow-sm">
-                    <span className="font-extrabold text-orange-500 block mb-1 text-xs uppercase tracking-wider">⚠️ Identified Risks</span>
-                    <span className="text-text-primary font-medium text-sm">Semester exams in 15 days, but DSA preparations are falling behind.</span>
-                  </div>
-                </div>
-              </div>
+                );
+              })()}
 
               <div className="mt-6 pt-5 border-t border-primary/10 flex items-center justify-between relative z-10">
                 <p className="text-xs font-bold text-text-secondary">Ready to dominate today's targets?</p>
@@ -526,19 +557,28 @@ export const Dashboard = () => {
                 ) : (
                   <div className="space-y-3">
                     {pendingTasks.slice(0, 4).map((task) => (
-                      <div key={task.id} className="flex items-center justify-between p-3.5 bg-gray-50/50 rounded-2xl border border-gray-100 hover:border-primary/20 transition-colors group">
+                      <Link 
+                        to="/tasks"
+                        onClick={() => {
+                          if (task.missionId) {
+                            localStorage.setItem('selectedMissionId', task.missionId);
+                          }
+                        }}
+                        key={task.id} 
+                        className="flex items-center justify-between p-3.5 bg-gray-50/50 rounded-2xl border border-gray-100 hover:border-primary/20 hover:bg-white transition-all group cursor-pointer"
+                      >
                         <div className="flex items-center gap-3 overflow-hidden">
                           <span className={`w-2.5 h-2.5 rounded-full shrink-0 ${
                             task.priority === 'urgent' ? 'bg-red-500 shadow-sm shadow-red-500/30' : task.priority === 'high' ? 'bg-orange-500 shadow-sm shadow-orange-500/30' : 'bg-primary shadow-sm shadow-primary/30'
                           }`} />
-                          <span className="font-semibold text-xs text-text-primary truncate">{task.title}</span>
+                          <span className="font-semibold text-xs text-text-primary truncate group-hover:text-primary transition-colors">{task.title}</span>
                         </div>
                         {task.estimatedDuration && (
                           <span className="shrink-0 text-[10px] font-bold bg-white border border-gray-200 text-text-secondary px-2 py-1 rounded-lg">
                             {task.estimatedDuration}m
                           </span>
                         )}
-                      </div>
+                      </Link>
                     ))}
                   </div>
                 )}

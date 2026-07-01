@@ -50,7 +50,7 @@ export const AnalyticsView = () => {
   ];
 
   return (
-    <div className="p-8 h-full flex flex-col font-body overflow-y-auto">
+    <div className="p-8 h-full flex flex-col font-body overflow-y-auto animate-page-reveal">
       <header className="mb-8">
         <h1 className="text-3xl font-heading font-bold text-text-primary flex items-center gap-3">
           <BarChart3 className="w-8 h-8 text-primary" />

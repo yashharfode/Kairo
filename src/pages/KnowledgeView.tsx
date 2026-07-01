@@ -324,7 +324,7 @@ export const KnowledgeView = () => {
   }, [filteredNodes]);
 
   return (
-    <div className="h-full flex bg-[#fbfbfe] font-body overflow-hidden">
+    <div className="h-full flex bg-[#fbfbfe] font-body overflow-hidden animate-page-reveal">
       
       {/* ── LEFT SIDEBAR (Vault) ── */}
       <aside className="w-[280px] bg-white border-r border-gray-150 flex flex-col shadow-[4px_0_24px_rgba(0,0,0,0.02)] shrink-0 z-20">

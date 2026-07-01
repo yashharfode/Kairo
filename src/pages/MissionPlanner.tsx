@@ -39,7 +39,7 @@ export const MissionPlanner = () => {
   };
 
   return (
-    <div className="p-4 md:p-8 h-full flex flex-col font-body">
+    <div className="p-4 md:p-8 h-full flex flex-col font-body animate-page-reveal">
       <header className="mb-6 md:mb-8 flex items-center justify-between">
         <div>
           <h1 className="text-2xl md:text-3xl font-heading font-black text-text-primary flex items-center gap-3">

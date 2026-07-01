@@ -96,7 +96,7 @@ export const AIChatView = () => {
   };
 
   return (
-    <div className="p-4 md:p-8 h-full flex flex-col font-body bg-[#f9f9fd] overflow-hidden">
+    <div className="p-4 md:p-8 h-full flex flex-col font-body bg-[#f9f9fd] overflow-hidden animate-page-reveal">
       
       {/* ── HEADER ── */}
       <header className="mb-6 flex items-center justify-between max-w-4xl mx-auto w-full shrink-0">

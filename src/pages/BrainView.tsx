@@ -235,7 +235,7 @@ export const BrainView = () => {
   const filtered = getFilteredMemories();
 
   return (
-    <div className="p-4 md:p-8 h-full flex flex-col font-body overflow-y-auto bg-[#f9f9fd]">
+    <div className="p-4 md:p-8 h-full flex flex-col font-body overflow-y-auto bg-[#f9f9fd] animate-page-reveal">
 
       {/* ── Header ── */}
       <header className="mb-6 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">

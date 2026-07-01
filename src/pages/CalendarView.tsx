@@ -255,10 +255,9 @@ export const CalendarView = () => {
     const cat = e.extendedProps?.category as EventCategory;
     return selectedCategories[cat] !== false;
   });
-
   return (
     <div className={cn(
-      "p-4 md:p-6 flex flex-col font-body bg-[#fbfbfe] overflow-hidden space-y-4 transition-all duration-300",
+      "p-4 md:p-6 flex flex-col font-body bg-[#fbfbfe] overflow-hidden space-y-4 transition-all duration-300 animate-page-reveal",
       isFullscreen 
         ? "fixed inset-0 z-[999] w-screen h-screen" 
         : "h-full w-full"

@@ -272,24 +272,31 @@ class LemmaService {
         updatedAt: new Date().toISOString(),
       };
 
-      const generatedTasks: Task[] = tasksList.map((t, index) => ({
-        id: `t-mock-${index}-${Date.now()}`,
-        userId: 'mock-user-id',
-        missionId: mockPlanId,
-        title: t.title,
-        description: t.desc,
-        status: 'todo',
-        priority: 'medium',
-        estimatedDuration: t.dur,
-        createdAt: new Date().toISOString(),
-        updatedAt: new Date().toISOString(),
-      }));
+      const now = new Date();
+      const generatedTasks: Task[] = tasksList.map((t, index) => {
+        const scheduledStart = new Date(now.getTime() + index * 3 * 3600 * 1000);
+        const scheduledEnd = new Date(scheduledStart.getTime() + (t.dur || 60) * 60 * 1000);
+        return {
+          id: `t-mock-${index}-${Date.now()}`,
+          userId: 'mock-user-id',
+          missionId: mockPlanId,
+          title: t.title,
+          description: t.desc,
+          status: 'todo',
+          priority: 'medium',
+          estimatedDuration: t.dur,
+          scheduledStart: scheduledStart.toISOString(),
+          scheduledEnd: scheduledEnd.toISOString(),
+          createdAt: new Date().toISOString(),
+          updatedAt: new Date().toISOString(),
+        };
+      });
 
       // Also persist these locally in the SQLite or datastore if possible
       try {
         await this.queryDatastore(`INSERT INTO missions (id, user_id, title, description, status, start_date, target_date, created_at, updated_at) VALUES ('${generatedMission.id}', '${generatedMission.userId}', '${generatedMission.title.replace(/'/g, "''")}', '${generatedMission.description.replace(/'/g, "''")}', 'active', '${generatedMission.startDate}', '${generatedMission.targetDate}', '${generatedMission.createdAt}', '${generatedMission.updatedAt}')`);
         for (const t of generatedTasks) {
-          await this.queryDatastore(`INSERT INTO tasks (id, user_id, mission_id, title, description, status, priority, estimated_duration, created_at, updated_at) VALUES ('${t.id}', '${t.userId}', '${t.missionId}', '${t.title.replace(/'/g, "''")}', '${(t.description || '').replace(/'/g, "''")}', 'todo', 'medium', ${t.estimatedDuration}, '${t.createdAt}', '${t.updatedAt}')`);
+          await this.queryDatastore(`INSERT INTO tasks (id, user_id, mission_id, title, description, status, priority, estimated_duration, scheduled_start, scheduled_end, created_at, updated_at) VALUES ('${t.id}', '${t.userId}', '${t.missionId}', '${t.title.replace(/'/g, "''")}', '${(t.description || '').replace(/'/g, "''")}', 'todo', 'medium', ${t.estimatedDuration}, '${t.scheduledStart}', '${t.scheduledEnd}', '${t.createdAt}', '${t.updatedAt}')`);
         }
         await this.queryDatastore(`INSERT INTO memories (id, user_id, content, created_at, updated_at) VALUES ('mem-${Date.now()}', 'mock-user-id', 'Created mission: ${title.replace(/'/g, "''")}. ${desc.replace(/'/g, "''")}', '${new Date().toISOString()}', '${new Date().toISOString()}')`);
       } catch (dbErr) {

@@ -239,7 +239,7 @@ export const WorkspacesView = () => {
   const demoStats = activeWorkspace ? getProgressStats(activeWorkspace.demoChecklist) : { total: 0, completed: 0, percentage: 0 };
 
   return (
-    <div className="p-4 md:p-6 min-h-screen flex flex-col font-body max-w-[1600px] mx-auto w-full space-y-6">
+    <div className="p-4 md:p-6 min-h-screen flex flex-col font-body max-w-[1600px] mx-auto w-full space-y-6 animate-page-reveal">
       
       {/* HEADER SECTION */}
       <header className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">

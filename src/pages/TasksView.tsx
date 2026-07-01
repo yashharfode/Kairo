@@ -278,13 +278,17 @@ export const TasksView = () => {
         setMissions(mergedMissions);
         setTasks(mergedTasks);
         if (mergedMissions.length > 0) {
-          setSelectedMissionId(mergedMissions[0].id);
+          const cachedId = localStorage.getItem('selectedMissionId');
+          const exists = mergedMissions.some(x => x.id === cachedId);
+          setSelectedMissionId(exists && cachedId ? cachedId : mergedMissions[0].id);
         }
       } catch (err) {
         console.error('[TasksView] Failed to load data:', err);
         setMissions(SEED_MISSIONS);
         setTasks(SEED_TASKS);
-        setSelectedMissionId(SEED_MISSIONS[0].id);
+        const cachedId = localStorage.getItem('selectedMissionId');
+        const exists = SEED_MISSIONS.some(x => x.id === cachedId);
+        setSelectedMissionId(exists && cachedId ? cachedId : SEED_MISSIONS[0].id);
       } finally {
         setLoading(false);
       }
@@ -319,7 +323,7 @@ export const TasksView = () => {
   };
 
   return (
-    <div className="bg-[#FAFAFC] min-h-screen font-body p-5 md:p-6 space-y-5 overflow-y-auto">
+    <div className="bg-[#FAFAFC] min-h-screen font-body p-5 md:p-6 space-y-5 overflow-y-auto animate-page-reveal">
       
       {/* HEADER SECTION (Medium density height) */}
       <header className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 pb-1">
@@ -455,7 +459,10 @@ export const TasksView = () => {
                     return (
                       <button
                         key={m.id}
-                        onClick={() => setSelectedMissionId(m.id)}
+                        onClick={() => {
+                          setSelectedMissionId(m.id);
+                          localStorage.setItem('selectedMissionId', m.id);
+                        }}
                         className={cn(
                           "w-full text-left p-4 rounded-xl border transition-all duration-300 flex flex-col gap-3 relative overflow-hidden group",
                           isSelected

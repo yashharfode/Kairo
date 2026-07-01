@@ -149,7 +149,7 @@ export const SmartInbox = () => {
   };
 
   return (
-    <div className="relative min-h-screen bg-[#f8f8fc] font-body overflow-hidden flex flex-col">
+    <div className="relative min-h-screen bg-[#f8f8fc] font-body overflow-hidden flex flex-col animate-page-reveal">
 
       {/* ── Background decorative blobs ── */}
       <div className="pointer-events-none fixed inset-0 overflow-hidden">
