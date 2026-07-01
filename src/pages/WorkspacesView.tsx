@@ -1,8 +1,8 @@
 import React, { useEffect, useState } from 'react';
 import { 
   Layers, Plus, Loader2, Sparkles, CheckSquare, 
-  ExternalLink, ChevronRight, Globe, Compass, Calendar, 
-  Clock, ShieldAlert, Award, Settings, Play, Check, X, ClipboardList, Flag, Search, Link as LinkIcon, FileText
+  Globe, Compass, Calendar, 
+  ShieldAlert, Settings, Play, Check, X, ClipboardList, Flag, Search, Link as LinkIcon, FileText
 } from 'lucide-react';
 import { workspaceService } from '@/services/WorkspaceService';
 import type { Workspace } from '@/services/WorkspaceService';
@@ -505,7 +505,7 @@ export const WorkspacesView = () => {
                     {/* Progress connection line */}
                     <div className="absolute left-6 right-6 top-[15px] h-0.5 bg-slate-100 -z-10" />
 
-                    {activeWorkspace.timeline.map((step, idx) => {
+                    {activeWorkspace.timeline.map(step => {
                       const isCompleted = step.status === 'completed';
                       const isInProgress = step.status === 'in_progress';
                       
@@ -759,7 +759,7 @@ export const WorkspacesView = () => {
                     <CheckSquare className="w-4 h-4 text-primary" /> Submission Checklist ({subStats.completed}/{subStats.total})
                   </h4>
                   <div className="space-y-2">
-                    {activeWorkspace.submissionChecklist.map((item, index) => (
+                    {activeWorkspace.submissionChecklist.map(item => (
                       <label key={item.id} className="flex items-start gap-2.5 p-2 rounded-xl hover:bg-slate-50 cursor-pointer text-xs">
                         <input
                           type="checkbox"
@@ -781,7 +781,7 @@ export const WorkspacesView = () => {
                     <Play className="w-4 h-4 text-[#14B8A6]" /> Demo Checklist ({demoStats.completed}/{demoStats.total})
                   </h4>
                   <div className="space-y-2">
-                    {activeWorkspace.demoChecklist.map((item, index) => (
+                    {activeWorkspace.demoChecklist.map(item => (
                       <label key={item.id} className="flex items-start gap-2.5 p-2 rounded-xl hover:bg-slate-50 cursor-pointer text-xs">
                         <input
                           type="checkbox"

@@ -500,6 +500,8 @@ export const KnowledgeView = () => {
                     
                     const isFading = selectedNodeId && !(selectedNodeId === e.source_id || selectedNodeId === e.target_id);
                     const isHighlighted = selectedNodeId && (selectedNodeId === e.source_id || selectedNodeId === e.target_id);
+                    const srcNode = nodeById[e.source_id];
+                    const color = srcNode ? (KIND_COLOR[srcNode.kind || 'concept'] || '#5A5CD8') : '#5A5CD8';
                     
                     return (
                       <g key={e.id}>

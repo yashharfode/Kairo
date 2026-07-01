@@ -6,7 +6,6 @@ import {
   ArrowRight, 
   CheckCircle2, 
   Sparkles, 
-  Clock,
   PlusCircle,
   MessageSquare,
   Inbox,
