@@ -45,17 +45,17 @@ export const AIChatView = () => {
 Analyze the user's request using your context.
 You MUST reply with a SINGLE, raw JSON object matching this exact schema:
 {
-  "reply": "Your response here.",
+  "reply": "Your direct message to the user goes here. NO INTERNAL THOUGHTS ALLOWED IN THIS FIELD.",
   "options": ["Short follow-up option 1", "Short follow-up option 2"]
 }
 
 STRICT RESPONSE RULES:
-1. NEVER output internal thoughts, conversational filler, or preamble.
-2. Output ONLY the raw JSON object starting with '{' and ending with '}'. Do not use markdown wrappers.
+1. NEVER output internal thoughts, conversational filler, or preamble ANYWHERE in the response.
+2. The "reply" string must ONLY contain the final message addressed to the user. Do NOT narrate your thoughts.
 3. Be extremely concise and direct in the "reply" field. Limit to 2-4 sentences max.
 4. Use bold text (**key term**) for important targets.
 5. Format lists with clean dashes (- item).
-6. If the user asks for a plan, list only the top 3-4 immediate next steps.
+6. Output ONLY the raw JSON object starting with '{' and ending with '}'.
 
 User query: ${text}`;
 
