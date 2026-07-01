@@ -13,6 +13,7 @@ import { KnowledgeView } from '@/pages/KnowledgeView';
 import { AnalyticsView } from '@/pages/AnalyticsView';
 import { SettingsView } from '@/pages/SettingsView';
 import { WorkspacesView } from '@/pages/WorkspacesView';
+import { GuideView } from '@/pages/GuideView';
 
 import { AuthProvider, useAuth } from '@/context/AuthContext';
 
@@ -42,6 +43,7 @@ function App() {
             <Route path="/knowledge" element={<KnowledgeView />} />
             <Route path="/analytics" element={<AnalyticsView />} />
             <Route path="/settings" element={<SettingsView />} />
+            <Route path="/guide" element={<GuideView />} />
           </Route>
         </Routes>
       </BrowserRouter>

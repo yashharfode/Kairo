@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { NavLink } from 'react-router-dom';
-import { LayoutDashboard, Brain, Inbox, Flag, Calendar, CheckSquare, MessageSquare, BookOpen, BarChart3, Settings, LogOut, X, ChevronLeft, ChevronRight, Layers } from 'lucide-react';
+import { LayoutDashboard, Brain, Inbox, Flag, Calendar, CheckSquare, MessageSquare, BookOpen, BarChart3, Settings, LogOut, X, ChevronLeft, ChevronRight, Layers, HelpCircle } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useAuth } from '@/context/AuthContext';
 
@@ -16,6 +16,7 @@ const navItems = [
   { name: 'Knowledge', path: '/knowledge', icon: BookOpen },
   { name: 'Analytics', path: '/analytics', icon: BarChart3 },
   { name: 'Settings', path: '/settings', icon: Settings },
+  { name: 'User Guide', path: '/guide', icon: HelpCircle },
 ];
 
 interface SidebarProps {
